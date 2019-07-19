@@ -2,7 +2,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.optimize as op
-import random as rnd
 
 df = pd.read_csv('ex2data1.txt', sep=",", header=None)
 
@@ -21,26 +20,33 @@ def normalize(x):
     return x_norm
 
 
+def predict(x, theta):
+    theta = theta.reshape(3,1)
+    return prob(x, theta)
+
+
 def prob(x, theta):
-    return sigmoid(pred(x, theta))
+    return sigmoid(pred(theta, x))
+
+
+def accuracy(x, y, theta, threshhold=0.5):
+    predicted_classes = (predict(x, theta) >= threshhold).astype(int)
+    predicted_classes = predicted_classes.flatten()
+    accuracy = np.mean(predicted_classes == y)
+    return accuracy
+
 
 
 # split training data set to x and y
 dfX = df.iloc[:, :2]
-dfX_norm = normalize(dfX)
-
 dfX.insert(loc=0, column=2, value=1)
 dfX.columns = range(df.shape[1])
-
-dfX_norm.insert(loc=0, column=2, value=1)
-dfX_norm.columns = range(df.shape[1])
 nx = dfX.to_numpy()
-
+nxn = normalize(nx)
 dfy = df.iloc[:, 2:3]
 dfy.columns = range(dfy.shape[1])
 ny = dfy.to_numpy()
 
-t1 = pd.Series([0, 0, 0])
 # Init thetas this way for high number of parameters
 theta = pd.DataFrame(np.zeros((3, 1)))
 nt = theta.to_numpy()
@@ -58,8 +64,8 @@ def logregcost(theta, x, y, regt=0):
     p = sigmoid(pred(theta, x))
     cost = -np.average(y * np.log(p + epsilon) + (1 - y) * np.log(1 - p + epsilon))
     cost_reg = cost + (regt / 2 * m) * (np.linalg.norm(theta[1:] ** 2))
-    gr = (1 / m) * np.dot(x.T, (p - y))
-    return cost_reg, gr
+    grad = (1 / m) * np.dot(x.T, (p - y))
+    return cost_reg, grad
 
 
 # Using fmin_tnc to find best params method #1
@@ -70,39 +76,19 @@ def fit(t, x, y):
 
 # Gradient descent method #2
 def gradient_descent_lr(x, y, theta, alpha, iter, regt=0):
-    t = theta
-    c = []
     m = len(y)
-    p = sigmoid(pred(t, x))
+    p = sigmoid(pred(theta, x))
     cost_history = []
     theta_history = []
     for i in range(iter):
-        regterm = (regt / m) * (np.linalg.norm(t[1:]))
-        c, g = logregcost(t, x, y, regt)
+        regterm = (regt / m) * (np.linalg.norm(theta[1:]))
+        c, g = logregcost(theta, x, y, regt)
         delta = alpha * (1 / m) * (x.T.dot((p - y)))
-        t = t - delta + regterm
+        theta = theta - delta + regterm
         cost_history.append(c)
-        theta_history.append(t)
+        theta_history.append(theta)
 
-    return t, c, g,  cost_history, theta_history
-
-
-def decision_boundary(p):
-    return 1 if p >= .5 else 0
-
-
-def classify(pred):
-    '''
-    input  - N element array of predictions between 0 and 1
-    output - N element array of 0s (False) and 1s (True)
-    '''
-    decision_boundary = np.vectorize()
-    return decision_boundary(pred).flatten()
-
-
-def accuracy(x, y):
-    diff = x - y
-    return 1.0 - (float(np.count_nonzero(diff)) / len(diff))
+    return theta.flatten(), c, g,  cost_history, theta_history
 
 
 # Data plotting
@@ -114,53 +100,36 @@ def plotCost(c_h):
     plt.show()
 
 
-def plotdata(y, x, t_n):
+def plotdata(x, t_n):
 
-    x_v = pd.Series([dfX.iloc[:, 1].min() - 1, dfX.iloc[:, 2].max() + 1])
-    y_v = pd.Series([-t_n[0, 0] + t_n[1, 0] * x_v.iloc[1:2]/ t_n[2, 0],
-                     t_n[0, 0] + t_n[1, 0] * x_v.iloc[:1] / t_n[2, 0]])
-
+    x_v = pd.Series([np.min(x[:,1]) - 1, np.max(x[:,2] + 1)])
+    y_v = -(t_n[0] + np.dot(t_n[1], x_v))/t_n[2]
     pos = df.index[dfy[0] == 1]
     neg = dfy.index[dfy[0] == 0]
-    plt.scatter(x.iloc[pos, 1], x.iloc[pos, 2], color='red')
-    plt.scatter(x.iloc[neg, 1], x.iloc[neg, 2], color='blue')
+    plt.scatter(x[pos, 1], x[pos, 2], color='red')
+    plt.scatter(x[neg, 1], x[neg, 2], color='blue')
     plt.plot(x_v, y_v)
 
     plt.title("Log Regression")
     plt.xlabel('Test Score 1')
     plt.ylabel('Test Score 2')
-    plt.legend({'Admitted', 'Not Admitted', 'Reg Line'})
+    plt.legend({'Regression line', 'Not Admitted', 'Admitted'})
     plt.show()
 
 
-t, cc, gg,  cost_h, theta_h = gradient_descent_lr(dfX, dfy, theta, 0.000001, 1)
-t_fm = fit(nt, nx, ny).reshape(3,1)
-cc_fm, gg_fm = logregcost(t_fm, nx, ny)
-
-# print(sigmoid(pred(t_fm, nx)))
-t_n, cc_n, gg_n, cost_h_n, theta_h_n = gradient_descent_lr(dfX_norm, dfy, theta, 0.01, 1)
-t_n_r, cc_n_r, gg_n_r, cost_h_n_r, theta_h_n_r = gradient_descent_lr(dfX_norm, dfy, theta, 0.00001, 1, RegT)
-
-
-# plotCost(cost_h)
-# plotCost(cost_h_n)
-# plotCost(cost_h_n_r)
+fmin_theta = fit(nt, nx, ny)
+fmin_cost, fmin_grad = logregcost(fmin_theta.reshape(3,1), nx, ny)
+grad_d_theta, cost, grad, cost_hist, theta_hist = gradient_descent_lr(nxn, ny, nt, 0.05, 50)
 print(70 * '-')
+print('Theta parameters from fmin_tnc optimizer:\n ', fmin_theta)
+print('Minimized cost from fmin_tnc optimizer:\n ', fmin_cost)
+print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nx, ny.flatten(), fmin_theta)))
 
-print('Theta parameters from fmin_tnc optimizer:\n ', t_fm)
-print('Minimized cost from fmin_tnc optimizer:\n ', cc_fm)
 print(70 * '-')
-print('Theta parameter for not normalized data:\n ', t)
-print('Minimized cost for not normalized data:\n ', cc)
-print('History of cost: ', cost_h)
-print(50 * '-')
-print('Theta parameter for  normalized data:\n ', t_n)
-print('Minimized cost for  normalized data:\n ', cc_n)
-print('History of cost: ', cost_h_n)
-print(50*'-')
-print('Theta parameter for  normalized data:\n ', t_n_r)
-print('Minimized cost for  normalized data:\n ', cc_n_r)
-print('History of cost: ', cost_h_n_r)
-#
-# plotdata(dfy, dfX, t_n)
-plotdata(dfy, dfX, t_fm)
+print('Theta parameter for  normalized data:\n ', grad_d_theta)
+print('Minimized cost for  normalized data:\n ', cost)
+print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nxn, ny.flatten(), grad_d_theta)))
+
+plotdata(nxn, grad_d_theta)
+plotCost(cost_hist)
+plotdata(nx, fmin_theta)
