@@ -5,6 +5,21 @@ import scipy.optimize as op
 import scipy.io as sio
 from PIL import Image
 
+
+def sigmoid(x, derivative=False):
+    sigm = 1. / (1. + np.exp(-x))
+    if derivative:
+        return sigm * (1. - sigm)
+    return sigm
+
+
+def normalize(x):
+    f_mean = x.mean()
+    f_sigma = x.std()
+    x_norm = (x - f_mean) / f_sigma
+    return x_norm
+
+
 dataset = sio.loadmat('ex4data1.mat', squeeze_me=True)
 weights = sio.loadmat('ex4weights.mat', squeeze_me=True)
 
