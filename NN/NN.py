@@ -23,14 +23,27 @@ def normalize(x):
 dataset = sio.loadmat('ex4data1.mat', squeeze_me=True)
 weights = sio.loadmat('ex4weights.mat', squeeze_me=True)
 
+
 # Numpy for matrix operations
-X = dataset['X']
-y = dataset['y']
-Theta1 = weights['Theta1']
-Theta2 = weights['Theta2']
+X = dataset['X']   # [5000, 400] matrix
+y = dataset['y']   # [5000, 1] matrix
+Theta1 = weights['Theta1']  # [25, 401] matrix
+Theta2 = weights['Theta2']  # [10, 26] matrix
+
 # Pandas for data info
 dfX = pd.DataFrame(data=X, index=X[:, 0], columns=X[0, :])
 dfy = pd.DataFrame(data=y)
+
+
+INPUT_LAYER_SIZE = 400
+HIDDEN_LAYER_SIZE = 25
+NUM_LABELS = 10
+
+t1_vect = np.reshape(Theta1, (len(Theta1)*len(Theta1[0]), 1))
+t2_vect = np.reshape(Theta2, (len(Theta2)*len(Theta2[0]), 1))
+params = np.vstack((t1_vect, t2_vect))
+NUM_PARAMS = len(params)
+print(NUM_PARAMS)
 
 print(Theta1.shape)
 print(Theta2.shape)
@@ -54,4 +67,6 @@ def dispData(num_of_digits):
     im.show()
 
 
-dispData(20)
+
+def feed_forward():
+    pass

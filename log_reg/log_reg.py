@@ -21,7 +21,7 @@ def normalize(x):
 
 
 def predict(x, theta):
-    theta = theta.reshape(3,1)
+    theta = theta.reshape(3, 1)
     return prob(x, theta)
 
 
@@ -34,7 +34,6 @@ def accuracy(x, y, theta, threshhold=0.5):
     predicted_classes = predicted_classes.flatten()
     accuracy = np.mean(predicted_classes == y)
     return accuracy
-
 
 
 # split training data set to x and y
@@ -88,7 +87,7 @@ def gradient_descent_lr(x, y, theta, alpha, iter, regt=0):
         cost_history.append(c)
         theta_history.append(theta)
 
-    return theta.flatten(), c, g,  cost_history, theta_history
+    return theta.flatten(), c, g, cost_history, theta_history
 
 
 # Data plotting
@@ -100,10 +99,13 @@ def plotCost(c_h):
     plt.show()
 
 
-def plotdata(x, t_n):
+# dd = np.where(ny == 1)
+# print(dd[0])
 
-    x_v = pd.Series([np.min(x[:,1]) - 1, np.max(x[:,2] + 1)])
-    y_v = -(t_n[0] + np.dot(t_n[1], x_v))/t_n[2]
+
+def plotdata(x, t_n):
+    x_v = pd.Series([np.min(x[:, 1]) - 1, np.max(x[:, 2] + 1)])
+    y_v = -(t_n[0] + np.dot(t_n[1], x_v)) / t_n[2]
     pos = df.index[dfy[0] == 1]
     neg = dfy.index[dfy[0] == 0]
     plt.scatter(x[pos, 1], x[pos, 2], color='red')
@@ -116,20 +118,19 @@ def plotdata(x, t_n):
     plt.legend({'Regression line', 'Not Admitted', 'Admitted'})
     plt.show()
 
-
-fmin_theta = fit(nt, nx, ny)
-fmin_cost, fmin_grad = logregcost(fmin_theta.reshape(3,1), nx, ny)
-grad_d_theta, cost, grad, cost_hist, theta_hist = gradient_descent_lr(nxn, ny, nt, 0.05, 50)
-print(70 * '-')
-print('Theta parameters from fmin_tnc optimizer:\n ', fmin_theta)
-print('Minimized cost from fmin_tnc optimizer:\n ', fmin_cost)
-print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nx, ny.flatten(), fmin_theta)))
-
-print(70 * '-')
-print('Theta parameter for  normalized data:\n ', grad_d_theta)
-print('Minimized cost for  normalized data:\n ', cost)
-print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nxn, ny.flatten(), grad_d_theta)))
-
-plotdata(nxn, grad_d_theta)
-plotCost(cost_hist)
-plotdata(nx, fmin_theta)
+# fmin_theta = fit(nt, nx, ny)
+# fmin_cost, fmin_grad = logregcost(fmin_theta.reshape(3,1), nx, ny)
+# grad_d_theta, cost, grad, cost_hist, theta_hist = gradient_descent_lr(nxn, ny, nt, 0.05, 50)
+# print(70 * '-')
+# print('Theta parameters from fmin_tnc optimizer:\n ', fmin_theta)
+# print('Minimized cost from fmin_tnc optimizer:\n ', fmin_cost)
+# print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nx, ny.flatten(), fmin_theta)))
+#
+# print(70 * '-')
+# print('Theta parameter for  normalized data:\n ', grad_d_theta)
+# print('Minimized cost for  normalized data:\n ', cost)
+# print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nxn, ny.flatten(), grad_d_theta)))
+#
+# plotdata(nxn, grad_d_theta)
+# plotCost(cost_hist)
+# plotdata(nx, fmin_theta)
