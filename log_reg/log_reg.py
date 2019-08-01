@@ -3,8 +3,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.optimize as op
 
-df = pd.read_csv('ex2data1.txt', sep=",", header=None)
-
 
 def sigmoid(z, derivative=False):
     sig = 1. / (1. + np.exp(-z))
@@ -36,6 +34,10 @@ def accuracy(x, y, theta, threshhold=0.5):
     return accuracy
 
 
+# 1 class data set
+df = pd.read_csv('ex2data1.txt', sep=",", header=None)
+
+
 # split training data set to x and y
 dfX = df.iloc[:, :2]
 dfX.insert(loc=0, column=2, value=1)
@@ -51,20 +53,24 @@ theta = pd.DataFrame(np.zeros((3, 1)))
 nt = theta.to_numpy()
 RegT = 1
 
-
 def pred(t, x):
     return x.dot(t)
 
 
 # Cost function that returns cost and gradient of it
 def logregcost(theta, x, y, regt=0):
+    # print(theta)
     epsilon = 1e-5
     m = len(y)
     p = sigmoid(pred(theta, x))
-    cost = -np.average(y * np.log(p + epsilon) + (1 - y) * np.log(1 - p + epsilon))
-    cost_reg = cost + (regt / 2 * m) * (np.linalg.norm(theta[1:] ** 2))
+    reg_param_for_cost = sum((regt / (2 * m)) * (theta[1:] ** 2))
+    reg_grad_temp = (3/m) * theta[1:]
+    reg_param_for_grad = np.insert(reg_grad_temp, 0, 0, axis=0)
+    cost = (1/m) * sum((-y * np.log(p + epsilon)) - ((1 - y) * np.log(1 - p + epsilon)))
+    cost_reg = cost + reg_param_for_cost
     grad = (1 / m) * np.dot(x.T, (p - y))
-    return cost_reg, grad
+    grad_reg = grad + reg_param_for_grad
+    return cost_reg, grad_reg
 
 
 # Using fmin_tnc to find best params method #1
@@ -118,19 +124,19 @@ def plotdata(x, t_n):
     plt.legend({'Regression line', 'Not Admitted', 'Admitted'})
     plt.show()
 
-# fmin_theta = fit(nt, nx, ny)
-# fmin_cost, fmin_grad = logregcost(fmin_theta.reshape(3,1), nx, ny)
-# grad_d_theta, cost, grad, cost_hist, theta_hist = gradient_descent_lr(nxn, ny, nt, 0.05, 50)
-# print(70 * '-')
-# print('Theta parameters from fmin_tnc optimizer:\n ', fmin_theta)
-# print('Minimized cost from fmin_tnc optimizer:\n ', fmin_cost)
-# print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nx, ny.flatten(), fmin_theta)))
-#
-# print(70 * '-')
-# print('Theta parameter for  normalized data:\n ', grad_d_theta)
-# print('Minimized cost for  normalized data:\n ', cost)
-# print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nxn, ny.flatten(), grad_d_theta)))
-#
-# plotdata(nxn, grad_d_theta)
-# plotCost(cost_hist)
-# plotdata(nx, fmin_theta)
+fmin_theta = fit(nt, nx, ny)
+fmin_cost, fmin_grad = logregcost(fmin_theta.reshape(3,1), nx, ny)
+grad_d_theta, cost, grad, cost_hist, theta_hist = gradient_descent_lr(nxn, ny, nt, 0.05, 50)
+print(70 * '-')
+print('Theta parameters from fmin_tnc optimizer:\n ', fmin_theta)
+print('Minimized cost from fmin_tnc optimizer:\n ', fmin_cost)
+print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nx, ny.flatten(), fmin_theta)))
+
+print(70 * '-')
+print('Theta parameter for  normalized data:\n ', grad_d_theta)
+print('Minimized cost for  normalized data:\n ', cost)
+print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nxn, ny.flatten(), grad_d_theta)))
+
+plotdata(nxn, grad_d_theta)
+plotCost(cost_hist)
+plotdata(nx, fmin_theta)

@@ -23,10 +23,9 @@ def normalize(x):
 dataset = sio.loadmat('ex4data1.mat', squeeze_me=True)
 weights = sio.loadmat('ex4weights.mat', squeeze_me=True)
 
-
 # Numpy for matrix operations
-X = dataset['X']   # [5000, 400] matrix
-y = dataset['y']   # [5000, 1] matrix
+X = dataset['X']  # [5000, 400] matrix
+y = dataset['y']  # [5000, 1] matrix
 Theta1 = weights['Theta1']  # [25, 401] matrix
 Theta2 = weights['Theta2']  # [10, 26] matrix
 
@@ -34,13 +33,12 @@ Theta2 = weights['Theta2']  # [10, 26] matrix
 dfX = pd.DataFrame(data=X, index=X[:, 0], columns=X[0, :])
 dfy = pd.DataFrame(data=y)
 
-
 INPUT_LAYER_SIZE = 400
 HIDDEN_LAYER_SIZE = 25
 NUM_LABELS = 10
 
-t1_vect = np.reshape(Theta1, (len(Theta1)*len(Theta1[0]), 1))
-t2_vect = np.reshape(Theta2, (len(Theta2)*len(Theta2[0]), 1))
+t1_vect = np.reshape(Theta1, (len(Theta1) * len(Theta1[0]), 1))
+t2_vect = np.reshape(Theta2, (len(Theta2) * len(Theta2[0]), 1))
 params = np.vstack((t1_vect, t2_vect))
 NUM_PARAMS = len(params)
 print(NUM_PARAMS)
@@ -53,6 +51,8 @@ print(dfy.info())
 img1 = np.reshape(X[1, :], (20, 20))
 img2 = np.reshape(X[2, :], (20, 20))
 img_pair = np.hstack((img1, img2))
+
+
 # check image in data set
 
 
@@ -67,6 +67,20 @@ def dispData(num_of_digits):
     im.show()
 
 
+# Feed forward
+def feed_forward(X, t1, t2):
+    a1 = np.c_[np.ones([len(X), 1]), X]
+    print(a1.shape)
+    z2 = a1.dot(t1.T)
+    print(z2.shape)
+    a2 = sigmoid(z2)
+    a2 = np.c_[np.ones([len(a2), 1]), a2]
+    print(a2.shape)
+    z3 = a2.dot(t2.T)
+    print(z3.shape)
+    a3 = sigmoid(z3)
+    print(a3.shape)
 
-def feed_forward():
+
+def backpropogation():
     pass
