@@ -2,6 +2,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.optimize as op
+import scipy.io as sio
+
 
 
 def sigmoid(z, derivative=False):
@@ -34,9 +36,17 @@ def accuracy(x, y, theta, threshhold=0.5):
     return accuracy
 
 
+# multi class data set
+dataset = sio.loadmat('ex3data1.mat', squeeze_me=True)
+weights = sio.loadmat('ex3weights.mat', squeeze_me=True)
+X = dataset['X']  # [5000, 400] matrix
+X_b = np.c_[np.ones([len(X), 1]), X]  # [5000, 401] - adding bias
+y = dataset['y']  # [5000, 1] matrix
+t_m = np.zeros([len(X_b[0]), 1])
+
+
 # 1 class data set
 df = pd.read_csv('ex2data1.txt', sep=",", header=None)
-
 
 # split training data set to x and y
 dfX = df.iloc[:, :2]
@@ -51,7 +61,7 @@ ny = dfy.to_numpy()
 # Init thetas this way for high number of parameters
 theta = pd.DataFrame(np.zeros((3, 1)))
 nt = theta.to_numpy()
-RegT = 1
+
 
 def pred(t, x):
     return x.dot(t)
@@ -73,10 +83,41 @@ def logregcost(theta, x, y, regt=0):
     return cost_reg, grad_reg
 
 
-# Using fmin_tnc to find best params method #1
-def fit(t, x, y):
+# preparing K labels
+# y_test = np.array([[1],[1],[1],[2],[2],[2],[3],[3],[3]])
+# print((y_test == 1).astype(int))
+
+# store all thetas
+# pp = nt.T
+# pp = np.vstack((pp, nt.T))
+# print(nt.T)
+# print(pp)
+
+
+def fit_m(t, x, y):
     b_t = op.fmin_tnc(logregcost, x0=t, args=(x, y.flatten()))
     return b_t[0]
+
+
+# Using fmin_tnc to find best params method #1
+def fit(t, x, y):
+    all_thetas = np.empty([401,1])
+    for i in range(1,10):
+        y_1 = np.array([(y == i).astype(int)]).T
+        solution = op.fmin_tnc(logregcost, x0=t, args=(x, y_1.flatten()))
+
+        # all_thetas = np.append(all_thetas, solution[0], axis=0)
+    return solution[0]
+
+
+all_thetas = np.empty([401,1])
+ad = np.ones([401,1])
+all_thetas = np.append(all_thetas, ad, axis=1)
+print(all_thetas)
+# y_1 = np.array([(y == 1).astype(int)]).T
+# c_r, g_r = logregcost(t_m, X_b, y_1)
+# fmin_theta_m_1 = fit(t_m, X_b, y)
+# print('Theta parameters from fmin_tnc optimizer:\n ', fmin_theta_m_1.shape)
 
 
 # Gradient descent method #2
@@ -124,19 +165,20 @@ def plotdata(x, t_n):
     plt.legend({'Regression line', 'Not Admitted', 'Admitted'})
     plt.show()
 
-fmin_theta = fit(nt, nx, ny)
-fmin_cost, fmin_grad = logregcost(fmin_theta.reshape(3,1), nx, ny)
-grad_d_theta, cost, grad, cost_hist, theta_hist = gradient_descent_lr(nxn, ny, nt, 0.05, 50)
-print(70 * '-')
-print('Theta parameters from fmin_tnc optimizer:\n ', fmin_theta)
-print('Minimized cost from fmin_tnc optimizer:\n ', fmin_cost)
-print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nx, ny.flatten(), fmin_theta)))
 
-print(70 * '-')
-print('Theta parameter for  normalized data:\n ', grad_d_theta)
-print('Minimized cost for  normalized data:\n ', cost)
-print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nxn, ny.flatten(), grad_d_theta)))
+# fmin_theta = fit(nt, nx, ny)
+# fmin_cost, fmin_grad = logregcost(fmin_theta.reshape(3,1), nx, ny)
+# grad_d_theta, cost, grad, cost_hist, theta_hist = gradient_descent_lr(nxn, ny, nt, 0.05, 50)
+# print(70 * '-')
+# print('Theta parameters from fmin_tnc optimizer:\n ', fmin_theta)
+# print('Minimized cost from fmin_tnc optimizer:\n ', fmin_cost)
+# print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nx, ny.flatten(), fmin_theta)))
 
-plotdata(nxn, grad_d_theta)
-plotCost(cost_hist)
-plotdata(nx, fmin_theta)
+# print(70 * '-')
+# print('Theta parameter for  normalized data:\n ', grad_d_theta)
+# print('Minimized cost for  normalized data:\n ', cost)
+# print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nxn, ny.flatten(), grad_d_theta)))
+
+# plotdata(nxn, grad_d_theta)
+# plotCost(cost_hist)
+# plotdata(nx, fmin_theta)
