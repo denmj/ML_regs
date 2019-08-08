@@ -5,7 +5,6 @@ import scipy.optimize as op
 import scipy.io as sio
 
 
-
 def sigmoid(z, derivative=False):
     sig = 1. / (1. + np.exp(-z))
     if derivative:
@@ -43,7 +42,7 @@ X = dataset['X']  # [5000, 400] matrix
 X_b = np.c_[np.ones([len(X), 1]), X]  # [5000, 401] - adding bias
 y = dataset['y']  # [5000, 1] matrix
 t_m = np.zeros([len(X_b[0]), 1])
-
+print(t_m.shape)
 
 # 1 class data set
 df = pd.read_csv('ex2data1.txt', sep=",", header=None)
@@ -74,9 +73,9 @@ def logregcost(theta, x, y, regt=0):
     m = len(y)
     p = sigmoid(pred(theta, x))
     reg_param_for_cost = sum((regt / (2 * m)) * (theta[1:] ** 2))
-    reg_grad_temp = (3/m) * theta[1:]
+    reg_grad_temp = (3 / m) * theta[1:]
     reg_param_for_grad = np.insert(reg_grad_temp, 0, 0, axis=0)
-    cost = (1/m) * sum((-y * np.log(p + epsilon)) - ((1 - y) * np.log(1 - p + epsilon)))
+    cost = (1 / m) * sum((-y * np.log(p + epsilon)) - ((1 - y) * np.log(1 - p + epsilon)))
     cost_reg = cost + reg_param_for_cost
     grad = (1 / m) * np.dot(x.T, (p - y))
     grad_reg = grad + reg_param_for_grad
@@ -100,24 +99,26 @@ def fit_m(t, x, y):
 
 
 # Using fmin_tnc to find best params method #1
-def fit(t, x, y):
-    all_thetas = np.empty([401,1])
-    for i in range(1,10):
-        y_1 = np.array([(y == i).astype(int)]).T
-        solution = op.fmin_tnc(logregcost, x0=t, args=(x, y_1.flatten()))
+def fit(t, x, y, num_labels=2):
+    thetas = np.array([])
 
-        # all_thetas = np.append(all_thetas, solution[0], axis=0)
-    return solution[0]
+    if num_labels == 2:
+        solution = op.fmin_tnc(logregcost, x0=t, args=(x, y.flatten()))
+        thetas = solution[0]
+    else:
+        thetas = np.array([])
+        for i in range(1, num_labels+1):
+            y_1 = np.array([(y == i).astype(int)]).T
+            solution = op.fmin_tnc(logregcost, x0=t, args=(x, y_1.flatten()))
+            thetas = np.concatenate([thetas, solution[0]], axis=0)
+
+    return thetas
 
 
-all_thetas = np.empty([401,1])
-ad = np.ones([401,1])
-all_thetas = np.append(all_thetas, ad, axis=1)
-print(all_thetas)
 # y_1 = np.array([(y == 1).astype(int)]).T
-# c_r, g_r = logregcost(t_m, X_b, y_1)
-# fmin_theta_m_1 = fit(t_m, X_b, y)
-# print('Theta parameters from fmin_tnc optimizer:\n ', fmin_theta_m_1.shape)
+
+fmin_theta_m_1 = fit(t_m, X_b, y, 10)
+print('Theta parameters from fmin_tnc optimizer:\n ', fmin_theta_m_1.reshape(401, 10).shape)
 
 
 # Gradient descent method #2
@@ -167,13 +168,14 @@ def plotdata(x, t_n):
 
 
 # fmin_theta = fit(nt, nx, ny)
+# print(fmin_theta)
 # fmin_cost, fmin_grad = logregcost(fmin_theta.reshape(3,1), nx, ny)
 # grad_d_theta, cost, grad, cost_hist, theta_hist = gradient_descent_lr(nxn, ny, nt, 0.05, 50)
 # print(70 * '-')
 # print('Theta parameters from fmin_tnc optimizer:\n ', fmin_theta)
 # print('Minimized cost from fmin_tnc optimizer:\n ', fmin_cost)
 # print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nx, ny.flatten(), fmin_theta)))
-
+#
 # print(70 * '-')
 # print('Theta parameter for  normalized data:\n ', grad_d_theta)
 # print('Minimized cost for  normalized data:\n ', cost)
