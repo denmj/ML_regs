@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.optimize as op
 import scipy.io as sio
-from sklearn.linear_model import LogisticRegression
 
 
 def sigmoid(z, derivative=False):
@@ -48,7 +47,7 @@ X_b = np.c_[np.ones([len(X), 1]), X]  # [5000, 401] - adding bias
 y = dataset['y']  # [5000, 1] matrix
 t_m = np.zeros([len(X_b[0]), 1]) # [401, 1]
 
-# 1 class data set
+# 2 class data set
 df = pd.read_csv('ex2data1.txt', sep=",", header=None)
 
 # split training data set to x and y
@@ -88,7 +87,6 @@ def logregcost(theta, x, y, regt=0):
 
 # Using fmin_tnc to find best params method #1
 def fit(t, x, y, num_labels=2):
-    thetas = np.array([])
 
     if num_labels == 2:
         solution = op.fmin_tnc(logregcost, x0=t, args=(x, y.flatten()))
@@ -129,10 +127,6 @@ def plotCost(c_h):
     plt.show()
 
 
-# dd = np.where(ny == 1)
-# print(dd[0])
-
-
 def plotdata(x, t_n):
     x_v = pd.Series([np.min(x[:, 1]) - 1, np.max(x[:, 2] + 1)])
     y_v = -(t_n[0] + np.dot(t_n[1], x_v)) / t_n[2]
@@ -148,26 +142,34 @@ def plotdata(x, t_n):
     plt.legend({'Regression line', 'Not Admitted', 'Admitted'})
     plt.show()
 
-#
-# fmin_theta = fit(nt, nx, ny)
-# fmin_cost, fmin_grad = logregcost(fmin_theta.reshape(3, 1), nx, ny)
-# # grad_d_theta, cost, grad, cost_hist, theta_hist = gradient_descent_lr(nxn, ny, nt, 0.05, 50)
-# print(70 * '-')
-# print('Theta parameters from fmin_tnc optimizer:\n ', fmin_theta)
-# print('Minimized cost from fmin_tnc optimizer:\n ', fmin_cost)
-# print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nx, ny.flatten(), fmin_theta)))
-# print(70 * '-')
 
-# print('Theta parameter for  normalized data:\n ', grad_d_theta)
-# print('Minimized cost for  normalized data:\n ', cost)
-# print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nxn, ny.flatten(), grad_d_theta)))
-#
+# Evaluation of model for 2-class Classification
+fmin_theta = fit(nt, nx, ny)
+fmin_cost, fmin_grad = logregcost(fmin_theta.reshape(3, 1), nx, ny)
+grad_d_theta, cost, grad, cost_hist, theta_hist = gradient_descent_lr(nxn, ny, nt, 0.05, 50)
+print(70 * '-')
+print('Theta parameters from fmin_tnc optimizer:\n ', fmin_theta)
+print('Minimized cost from fmin_tnc optimizer:\n ', fmin_cost)
+print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nx, ny.flatten(), fmin_theta)))
+print(70 * '-')
+
+print('Theta parameter for  normalized data:\n ', grad_d_theta)
+print('Minimized cost for  normalized data:\n ', cost)
+print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nxn, ny.flatten(), grad_d_theta)))
+plotdata(nxn, grad_d_theta)
+plotCost(cost_hist)
+plotdata(nx, fmin_theta)
+
+
+# Evaluation of model for multi-class Classification (Picture recognition [20x20])
 fmin_theta_m_1 = fit(t_m, X_b, y, 10)
-
 theta_m = fmin_theta_m_1.reshape(10, 401)
 pred_values = sigmoid(pred(theta_m.T, X_b))
-print(pred_values[0, :])
 
-# plotdata(nxn, grad_d_theta)
-# plotCost(cost_hist)
-# plotdata(nx, fmin_theta)
+vals = np.array([])
+for i in range(len(pred_values)):
+    max_ind = np.argmax(pred_values[i, :])+1  # Adding 1 to match  y-target values where 1=1...10=0
+    vals = np.append(vals, max_ind)
+
+print('The accuracy of the model:\n  {:.1%}'.format(np.mean(vals == y)))
+print(70 * '-')
