@@ -22,7 +22,6 @@ X = normalize(X)
 X_b = np.c_[np.ones([len(X), 1]), X]  # [5000, 401] - adding bias
 y = dataset['y']  # [5000, 1] matrix
 t_m = np.zeros([len(X_b[0]), 1])
-print(t_m.shape)
 
 # 1 class data set
 df = pd.read_csv('ex2data1.txt', sep=",", header=None)
@@ -44,4 +43,4 @@ nt = theta.to_numpy()
 clf = LogisticRegression(random_state=0, solver='lbfgs', multi_class='ovr', max_iter=1000).fit(X, y)
 predictions = clf.predict(X)
 print(clf.score(X, y))
-print(predictions)
+print(predictions.shape)

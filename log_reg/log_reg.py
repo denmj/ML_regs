@@ -6,7 +6,6 @@ import scipy.io as sio
 from sklearn.linear_model import LogisticRegression
 
 
-
 def sigmoid(z, derivative=False):
     sig = 1. / (1. + np.exp(-z))
     if derivative:
@@ -33,22 +32,21 @@ def prob(x, theta):
 def accuracy(x, y, theta, threshhold=0.5, num_l=2):
     if num_l == 2:
         predicted_classes = (predict(x, theta) >= threshhold).astype(int)
-        predicted_classes = predicted_classes.flatten()
-        accuracy = np.mean(predicted_classes == y)
+        # predicted_classes = predicted_classes.flatten()
+        acc = np.mean(predicted_classes == y)
     else:
         pass
-    return accuracy
+    return acc
 
 
 # multi class data set
 dataset = sio.loadmat('ex3data1.mat', squeeze_me=True)
 weights = sio.loadmat('ex3weights.mat', squeeze_me=True)
 X = dataset['X']  # [5000, 400] matrix
-# X = normalize(X)
+X = normalize(X)
 X_b = np.c_[np.ones([len(X), 1]), X]  # [5000, 401] - adding bias
 y = dataset['y']  # [5000, 1] matrix
-t_m = np.zeros([len(X_b[0]), 1])
-print(t_m.shape)
+t_m = np.zeros([len(X_b[0]), 1]) # [401, 1]
 
 # 1 class data set
 df = pd.read_csv('ex2data1.txt', sep=",", header=None)
@@ -97,7 +95,7 @@ def fit(t, x, y, num_labels=2):
         thetas = solution[0]
     else:
         thetas = np.array([])
-        for i in range(1, num_labels+1):
+        for i in range(1, num_labels + 1):
             y_1 = np.array([(y == i).astype(int)]).T
             solution = op.fmin_tnc(logregcost, x0=t, args=(x, y_1.flatten()))
             thetas = np.concatenate([thetas, solution[0]], axis=0)
@@ -150,23 +148,25 @@ def plotdata(x, t_n):
     plt.legend({'Regression line', 'Not Admitted', 'Admitted'})
     plt.show()
 
+#
+# fmin_theta = fit(nt, nx, ny)
+# fmin_cost, fmin_grad = logregcost(fmin_theta.reshape(3, 1), nx, ny)
+# # grad_d_theta, cost, grad, cost_hist, theta_hist = gradient_descent_lr(nxn, ny, nt, 0.05, 50)
+# print(70 * '-')
+# print('Theta parameters from fmin_tnc optimizer:\n ', fmin_theta)
+# print('Minimized cost from fmin_tnc optimizer:\n ', fmin_cost)
+# print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nx, ny.flatten(), fmin_theta)))
+# print(70 * '-')
 
-fmin_theta = fit(nt, nx, ny)
-print(fmin_theta)
-fmin_cost, fmin_grad = logregcost(fmin_theta.reshape(3,1), nx, ny)
-grad_d_theta, cost, grad, cost_hist, theta_hist = gradient_descent_lr(nxn, ny, nt, 0.05, 50)
-print(70 * '-')
-print('Theta parameters from fmin_tnc optimizer:\n ', fmin_theta)
-print('Minimized cost from fmin_tnc optimizer:\n ', fmin_cost)
-print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nx, ny.flatten(), fmin_theta)))
-
-print(70 * '-')
-print('Theta parameter for  normalized data:\n ', grad_d_theta)
-print('Minimized cost for  normalized data:\n ', cost)
-print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nxn, ny.flatten(), grad_d_theta)))
-
+# print('Theta parameter for  normalized data:\n ', grad_d_theta)
+# print('Minimized cost for  normalized data:\n ', cost)
+# print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nxn, ny.flatten(), grad_d_theta)))
+#
 fmin_theta_m_1 = fit(t_m, X_b, y, 10)
+
 theta_m = fmin_theta_m_1.reshape(10, 401)
+pred_values = sigmoid(pred(theta_m.T, X_b))
+print(pred_values[0, :])
 
 # plotdata(nxn, grad_d_theta)
 # plotCost(cost_hist)
