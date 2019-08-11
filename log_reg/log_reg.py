@@ -64,6 +64,13 @@ ny = dfy.to_numpy()
 theta = pd.DataFrame(np.zeros((3, 1)))
 nt = theta.to_numpy()
 
+df_2 = pd.read_csv('ex2data2.txt', sep=",", header=None)
+X_2 = df_2[[0, 1]]
+y_2 = df_2[[2]]
+
+X_b_2 = np.c_[np.ones([len(X_2), 1]), X_2]
+
+
 
 def pred(t, x):
     return x.dot(t)
@@ -144,32 +151,32 @@ def plotdata(x, t_n):
 
 
 # Evaluation of model for 2-class Classification
-fmin_theta = fit(nt, nx, ny)
-fmin_cost, fmin_grad = logregcost(fmin_theta.reshape(3, 1), nx, ny)
-grad_d_theta, cost, grad, cost_hist, theta_hist = gradient_descent_lr(nxn, ny, nt, 0.05, 50)
-print(70 * '-')
-print('Theta parameters from fmin_tnc optimizer:\n ', fmin_theta)
-print('Minimized cost from fmin_tnc optimizer:\n ', fmin_cost)
-print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nx, ny.flatten(), fmin_theta)))
-print(70 * '-')
-
-print('Theta parameter for  normalized data:\n ', grad_d_theta)
-print('Minimized cost for  normalized data:\n ', cost)
-print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nxn, ny.flatten(), grad_d_theta)))
-plotdata(nxn, grad_d_theta)
-plotCost(cost_hist)
-plotdata(nx, fmin_theta)
+# fmin_theta = fit(nt, nx, ny)
+# fmin_cost, fmin_grad = logregcost(fmin_theta.reshape(3, 1), nx, ny)
+# grad_d_theta, cost, grad, cost_hist, theta_hist = gradient_descent_lr(nxn, ny, nt, 0.05, 50)
+# print(70 * '-')
+# print('Theta parameters from fmin_tnc optimizer:\n ', fmin_theta)
+# print('Minimized cost from fmin_tnc optimizer:\n ', fmin_cost)
+# print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nx, ny.flatten(), fmin_theta)))
+# print(70 * '-')
+#
+# print('Theta parameter for  normalized data:\n ', grad_d_theta)
+# print('Minimized cost for  normalized data:\n ', cost)
+# print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nxn, ny.flatten(), grad_d_theta)))
+# plotdata(nxn, grad_d_theta)
+# plotCost(cost_hist)
+# plotdata(nx, fmin_theta)
 
 
 # Evaluation of model for multi-class Classification (Picture recognition [20x20])
-fmin_theta_m_1 = fit(t_m, X_b, y, 10)
-theta_m = fmin_theta_m_1.reshape(10, 401)
-pred_values = sigmoid(pred(theta_m.T, X_b))
-
-vals = np.array([])
-for i in range(len(pred_values)):
-    max_ind = np.argmax(pred_values[i, :])+1  # Adding 1 to match  y-target values where 1=1...10=0
-    vals = np.append(vals, max_ind)
-
-print('The accuracy of the model:\n  {:.1%}'.format(np.mean(vals == y)))
-print(70 * '-')
+# fmin_theta_m_1 = fit(t_m, X_b, y, 10)
+# theta_m = fmin_theta_m_1.reshape(10, 401)
+# pred_values = sigmoid(pred(theta_m.T, X_b))
+#
+# vals = np.array([])
+# for i in range(len(pred_values)):
+#     max_ind = np.argmax(pred_values[i, :])+1  # Adding 1 to match  y-target values where 1=1...10=0
+#     vals = np.append(vals, max_ind)
+#
+# print('The accuracy of the model:\n  {:.1%}'.format(np.mean(vals == y)))
+# print(70 * '-')
