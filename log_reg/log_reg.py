@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.optimize as op
 import scipy.io as sio
+from sklearn.preprocessing import PolynomialFeatures
 
 
 def sigmoid(z, derivative=False):
@@ -64,12 +65,14 @@ ny = dfy.to_numpy()
 theta = pd.DataFrame(np.zeros((3, 1)))
 nt = theta.to_numpy()
 
+# Another set of data
 df_2 = pd.read_csv('ex2data2.txt', sep=",", header=None)
-X_2 = df_2[[0, 1]]
-y_2 = df_2[[2]]
-
+X_2 = df_2[[0, 1]].to_numpy()
+y_2 = df_2[[2]].to_numpy()
 X_b_2 = np.c_[np.ones([len(X_2), 1]), X_2]
 
+poly = PolynomialFeatures(degree=6)
+print(poly)
 
 
 def pred(t, x):
@@ -134,7 +137,7 @@ def plotCost(c_h):
     plt.show()
 
 
-def plotdata(x, t_n):
+def plotdata(x, t_n=0):
     x_v = pd.Series([np.min(x[:, 1]) - 1, np.max(x[:, 2] + 1)])
     y_v = -(t_n[0] + np.dot(t_n[1], x_v)) / t_n[2]
     pos = df.index[dfy[0] == 1]
@@ -148,6 +151,21 @@ def plotdata(x, t_n):
     plt.ylabel('Test Score 2')
     plt.legend({'Regression line', 'Not Admitted', 'Admitted'})
     plt.show()
+
+# Feed Numpy type
+def plottemp (x, y, title, xl, yl):
+    pos = np.where(y == 1)
+    neg = np.where(y == 0)
+    plt.scatter(x[pos[0], 1], x[pos[0], 2], color='red')
+    plt.scatter(x[neg[0], 1], x[neg[0], 2], color='blue')
+    plt.title(title)
+    plt.xlabel(xl)
+    plt.ylabel(yl)
+    plt.legend({'Regression line', 'Not Admitted', 'Admitted'})
+    plt.show()
+
+
+plottemp(X_b_2, y_2, "Title", "Micro1", "Micro2")
 
 
 # Evaluation of model for 2-class Classification
