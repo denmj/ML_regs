@@ -41,30 +41,30 @@ t1_vect = np.reshape(Theta1, (len(Theta1) * len(Theta1[0]), 1))
 t2_vect = np.reshape(Theta2, (len(Theta2) * len(Theta2[0]), 1))
 params = np.vstack((t1_vect, t2_vect))
 NUM_PARAMS = len(params)
-print(NUM_PARAMS)
 
+print(X.shape)
+print(y.shape)
 print(Theta1.shape)
 print(Theta2.shape)
-print(dfX.info())
-print(dfy.info())
 
 img1 = np.reshape(X[1, :], (20, 20))
 img2 = np.reshape(X[2, :], (20, 20))
 img_pair = np.hstack((img1, img2))
 
-
 # check image in data set
 
 
-# displays digits in a row , orientation is not right still
+# displays digits in a row
 def dispData(num_of_digits):
-    img_arr_i = np.reshape(X[1, :], (20, 20))
+    img_arr_i = np.reshape(X[1, :], (20, 20)).T
     for i in range(num_of_digits):
-        temp_arr_i = np.reshape(X[np.random.randint(0, 4999), :], (20, 20))
+        temp_arr_i = np.reshape(X[np.random.randint(0, 4999), :], (20, 20)).T
         img_arr_i = np.hstack((img_arr_i, temp_arr_i))
 
     im = Image.fromarray(img_arr_i * 255)
     im.show()
+
+dispData(20)
 
 
 # Feed forward

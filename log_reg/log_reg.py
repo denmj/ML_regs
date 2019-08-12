@@ -210,3 +210,4 @@ for i in range(len(pred_values)):
 
 print('The accuracy of the model:\n  {:.1%}'.format(np.mean(vals == y)))
 print(70 * '-')
+

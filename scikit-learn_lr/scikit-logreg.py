@@ -6,7 +6,6 @@ import scipy.io as sio
 from sklearn.linear_model import LogisticRegression
 
 
-
 def normalize(x):
     f_mean = x.mean()
     f_sigma = x.std()
