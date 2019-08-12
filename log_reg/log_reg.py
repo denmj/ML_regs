@@ -65,14 +65,17 @@ ny = dfy.to_numpy()
 theta = pd.DataFrame(np.zeros((3, 1)))
 nt = theta.to_numpy()
 
-# Another set of data
+# Another set of data (Polynomial and Use of regularization)
 df_2 = pd.read_csv('ex2data2.txt', sep=",", header=None)
 X_2 = df_2[[0, 1]].to_numpy()
+X_2 = normalize(X_2)
 y_2 = df_2[[2]].to_numpy()
 X_b_2 = np.c_[np.ones([len(X_2), 1]), X_2]
 
-poly = PolynomialFeatures(degree=6)
-print(poly)
+poly = PolynomialFeatures(degree=2)
+X_2_poly = poly.fit_transform(X_2)
+t_poly = np.zeros([len(X_2_poly[0]), 1])
+
 
 
 def pred(t, x):
@@ -96,16 +99,16 @@ def logregcost(theta, x, y, regt=0):
 
 
 # Using fmin_tnc to find best params method #1
-def fit(t, x, y, num_labels=2):
+def fit(t, x, y, num_labels=2, reg = 0):
 
     if num_labels == 2:
-        solution = op.fmin_tnc(logregcost, x0=t, args=(x, y.flatten()))
+        solution = op.fmin_tnc(logregcost, x0=t, args=(x, y.flatten(), reg))
         thetas = solution[0]
     else:
         thetas = np.array([])
         for i in range(1, num_labels + 1):
             y_1 = np.array([(y == i).astype(int)]).T
-            solution = op.fmin_tnc(logregcost, x0=t, args=(x, y_1.flatten()))
+            solution = op.fmin_tnc(logregcost, x0=t, args=(x, y_1.flatten(), reg))
             thetas = np.concatenate([thetas, solution[0]], axis=0)
 
     return thetas
@@ -137,7 +140,7 @@ def plotCost(c_h):
     plt.show()
 
 
-def plotdata(x, t_n=0):
+def plotdata(x, t_n):
     x_v = pd.Series([np.min(x[:, 1]) - 1, np.max(x[:, 2] + 1)])
     y_v = -(t_n[0] + np.dot(t_n[1], x_v)) / t_n[2]
     pos = df.index[dfy[0] == 1]
@@ -152,7 +155,8 @@ def plotdata(x, t_n=0):
     plt.legend({'Regression line', 'Not Admitted', 'Admitted'})
     plt.show()
 
-# Feed Numpy type
+
+# Feed Numpy type / Working on plotting polynomial function as des.boundary
 def plottemp (x, y, title, xl, yl):
     pos = np.where(y == 1)
     neg = np.where(y == 0)
@@ -165,36 +169,44 @@ def plottemp (x, y, title, xl, yl):
     plt.show()
 
 
+
 plottemp(X_b_2, y_2, "Title", "Micro1", "Micro2")
+grad_p, cost_p = logregcost(t_poly, X_2_poly, y_2, 3)
+
+print(grad_p)
+print(cost_p)
+fmin_theta_poly = fit(t_poly, X_2_poly, y_2, 2, 3)
+print(fmin_theta_poly)
+print('The accuracy of the model:\n  {:.1%}'.format(accuracy(X_2_poly, y_2.flatten(), fmin_theta_poly)))
 
 
 # Evaluation of model for 2-class Classification
-# fmin_theta = fit(nt, nx, ny)
-# fmin_cost, fmin_grad = logregcost(fmin_theta.reshape(3, 1), nx, ny)
-# grad_d_theta, cost, grad, cost_hist, theta_hist = gradient_descent_lr(nxn, ny, nt, 0.05, 50)
-# print(70 * '-')
-# print('Theta parameters from fmin_tnc optimizer:\n ', fmin_theta)
-# print('Minimized cost from fmin_tnc optimizer:\n ', fmin_cost)
-# print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nx, ny.flatten(), fmin_theta)))
-# print(70 * '-')
-#
-# print('Theta parameter for  normalized data:\n ', grad_d_theta)
-# print('Minimized cost for  normalized data:\n ', cost)
-# print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nxn, ny.flatten(), grad_d_theta)))
-# plotdata(nxn, grad_d_theta)
-# plotCost(cost_hist)
-# plotdata(nx, fmin_theta)
+fmin_theta = fit(nt, nx, ny)
+fmin_cost, fmin_grad = logregcost(fmin_theta.reshape(3, 1), nx, ny)
+grad_d_theta, cost, grad, cost_hist, theta_hist = gradient_descent_lr(nxn, ny, nt, 0.05, 50)
+print(70 * '-')
+print('Theta parameters from fmin_tnc optimizer:\n ', fmin_theta)
+print('Minimized cost from fmin_tnc optimizer:\n ', fmin_cost)
+print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nx, ny.flatten(), fmin_theta)))
+print(70 * '-')
+
+print('Theta parameter for  normalized data:\n ', grad_d_theta)
+print('Minimized cost for  normalized data:\n ', cost)
+print('The accuracy of the model:\n  {:.1%}'.format(accuracy(nxn, ny.flatten(), grad_d_theta)))
+plotdata(nxn, grad_d_theta)
+plotCost(cost_hist)
+plotdata(nx, fmin_theta)
 
 
 # Evaluation of model for multi-class Classification (Picture recognition [20x20])
-# fmin_theta_m_1 = fit(t_m, X_b, y, 10)
-# theta_m = fmin_theta_m_1.reshape(10, 401)
-# pred_values = sigmoid(pred(theta_m.T, X_b))
-#
-# vals = np.array([])
-# for i in range(len(pred_values)):
-#     max_ind = np.argmax(pred_values[i, :])+1  # Adding 1 to match  y-target values where 1=1...10=0
-#     vals = np.append(vals, max_ind)
-#
-# print('The accuracy of the model:\n  {:.1%}'.format(np.mean(vals == y)))
-# print(70 * '-')
+fmin_theta_m_1 = fit(t_m, X_b, y, 10)
+theta_m = fmin_theta_m_1.reshape(10, 401)
+pred_values = sigmoid(pred(theta_m.T, X_b))
+
+vals = np.array([])
+for i in range(len(pred_values)):
+    max_ind = np.argmax(pred_values[i, :])+1  # Adding 1 to match  y-target values where 1=1...10=0
+    vals = np.append(vals, max_ind)
+
+print('The accuracy of the model:\n  {:.1%}'.format(np.mean(vals == y)))
+print(70 * '-')
