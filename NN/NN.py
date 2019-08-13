@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy.matlib as mtlb
 import scipy.optimize as op
 import scipy.io as sio
 from PIL import Image
@@ -64,11 +65,22 @@ def dispData(num_of_digits):
     im = Image.fromarray(img_arr_i * 255)
     im.show()
 
-dispData(20)
+# dispData(20)
 
 
 # Feed forward
-def feed_forward(X, t1, t2):
+def costfunc(X, t1, t2, y, l=0):
+
+    epsilon = 1e-5
+    m = len(y)
+    J = 0
+    # turing y from [5000,1] into [5000,10] matrix
+    a0 = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    Y1 = mtlb.repmat(a0, 5000, 1)
+    Y2 = mtlb.repmat(y, 10, 1).T
+    Y = np.equal(Y1, Y2).astype(int)
+
+    # Feed forward
     a1 = np.c_[np.ones([len(X), 1]), X]
     print(a1.shape)
     z2 = a1.dot(t1.T)
@@ -81,6 +93,19 @@ def feed_forward(X, t1, t2):
     a3 = sigmoid(z3)
     print(a3.shape)
 
+    reg_term = (l / (2 * m)) * (sum(sum((t1[1:] ** 2))) + sum(sum((t2[1:] ** 2))))
+    print(reg_term)
+    J = (1 / m) * sum(sum((-Y * np.log(a3 + epsilon)) - ((1 - Y) * np.log(1 - a3 + epsilon))))
+    J = J + reg_term
+
+    # Backpropagation (computing gradient)
+    reg_term_grad = 0
+    grad = 0
+
+    print(J)
+
+
+costfunc(X, Theta1, Theta2, y, 1)
 
 def backpropogation():
     pass
