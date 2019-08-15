@@ -79,7 +79,7 @@ def costfunc(X, t1, t2, y, l=0):
     Y1 = mtlb.repmat(a0, 5000, 1)
     Y2 = mtlb.repmat(y, 10, 1).T
     Y = np.equal(Y1, Y2).astype(int)
-
+    print("Feed F")
     # Feed forward
     a1 = np.c_[np.ones([len(X), 1]), X]
     print(a1.shape)
@@ -99,6 +99,16 @@ def costfunc(X, t1, t2, y, l=0):
     J = J + reg_term
 
     # Backpropagation (computing gradient)
+    delta3 = a3 - Y  # This is a dC/dz for output layer
+    print(delta3.shape)
+    # d2 = Theta2'*d3'. * sigmoidGradient([1;Theta1 * a1i']);
+    der_sig = sigmoid(z2, derivative=True)
+    print(der_sig.shape)
+    delta2 = delta3.dot(t2)
+    print(delta2.shape)
+
+
+
     reg_term_grad = 0
     grad = 0
 
@@ -106,6 +116,3 @@ def costfunc(X, t1, t2, y, l=0):
 
 
 costfunc(X, Theta1, Theta2, y, 1)
-
-def backpropogation():
-    pass
