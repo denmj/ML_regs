@@ -98,13 +98,14 @@ def costfunc(X, t1, t2, y, l=0):
     J = (1 / m) * sum(sum((-Y * np.log(a3 + epsilon)) - ((1 - Y) * np.log(1 - a3 + epsilon))))
     J = J + reg_term
 
+    print("BackP")
     # Backpropagation (computing gradient)
     delta3 = a3 - Y  # This is a dC/dz for output layer
-    print(delta3.shape)
-    # d2 = Theta2'*d3'. * sigmoidGradient([1;Theta1 * a1i']);
-    der_sig = sigmoid(z2, derivative=True)
-    print(der_sig.shape)
-    delta2 = delta3.dot(t2)
+
+    der_sig = sigmoid(z2, derivative=True) # add bias 1's to this
+    der_sig = np.c_[np.ones([len(der_sig), 1]), der_sig]
+    d2 = delta3.dot(t2)
+    delta2 = np.multiply(d2, der_sig)
     print(delta2.shape)
 
 
