@@ -43,8 +43,6 @@ t2_vect = np.reshape(Theta2, (len(Theta2) * len(Theta2[0]), 1))
 params = np.vstack((t1_vect, t2_vect))
 NUM_PARAMS = len(params)
 
-print(X.shape)
-print(y.shape)
 print(Theta1.shape)
 print(Theta2.shape)
 
@@ -100,19 +98,30 @@ def costfunc(X, t1, t2, y, l=0):
 
     print("BackP")
     # Backpropagation (computing gradient)
-    delta3 = a3 - Y  # This is a dC/dz for output layer
-
+    error3 = a3 - Y  # This is a dC/dz for output layer
     der_sig = sigmoid(z2, derivative=True) # add bias 1's to this
     der_sig = np.c_[np.ones([len(der_sig), 1]), der_sig]
-    d2 = delta3.dot(t2)
-    delta2 = np.multiply(d2, der_sig)
+    d2 = error3.dot(t2)
+
+    error2 = np.multiply(d2, der_sig) # dC/dz for hidden layer
+    error2 = np.delete(error2, 0, 1)
+
+    delta2 = error3.T.dot(a2)
+    delta1 = error2.T.dot(a1)
+
     print(delta2.shape)
+    print(delta1.shape)
 
+    reg_grad_temp1 = (l / m) * Theta1[1:]
+    reg_grad_temp2 = (l / m) * Theta2[1:]
 
+    reg_param_for_grad1 = np.insert(reg_grad_temp1, 0, 0, axis=0)
+    reg_param_for_grad2 = np.insert(reg_grad_temp2, 0, 0, axis=0)
 
-    reg_term_grad = 0
-    grad = 0
-
+    grad1 = delta1 + reg_param_for_grad1
+    grad2 = delta2 + reg_param_for_grad2
+    print(grad1.shape)
+    print(grad2.shape)
     print(J)
 
 
