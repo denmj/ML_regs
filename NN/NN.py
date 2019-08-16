@@ -66,37 +66,47 @@ def dispData(num_of_digits):
 # dispData(20)
 
 
-# Feed forward
-def costfunc(X, t1, t2, y, l=0):
+t1_u = Theta1.ravel()
+t2_u = Theta2.ravel()
+Theta_unr = np.concatenate([t1_u, t2_u], axis=0)
+
+
+#unroll and reshape parameters example.
+# A = np.array([[1, 2, 3], [4, 5, 6], [4, 9, 6], [6, 7, 8]])
+# B = A.ravel()
+# print(A)
+# print(B)
+# C = np.reshape(B[0:6], (2, 3))
+# D = np.reshape(B[6:], (2, 3))
+# print(C)
+# print(D)
+
+
+def costfunc(theta_unroll, X ,y, l=0):
+
+    t1 = np.reshape(theta_unroll[0:10025], (25, 401))
+    t2 = np.reshape(theta_unroll[10025:], (10, 26))
 
     epsilon = 1e-5
     m = len(y)
-    J = 0
     # turing y from [5000,1] into [5000,10] matrix
     a0 = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
     Y1 = mtlb.repmat(a0, 5000, 1)
     Y2 = mtlb.repmat(y, 10, 1).T
     Y = np.equal(Y1, Y2).astype(int)
-    print("Feed F")
+
     # Feed forward
     a1 = np.c_[np.ones([len(X), 1]), X]
-    print(a1.shape)
     z2 = a1.dot(t1.T)
-    print(z2.shape)
     a2 = sigmoid(z2)
     a2 = np.c_[np.ones([len(a2), 1]), a2]
-    print(a2.shape)
     z3 = a2.dot(t2.T)
-    print(z3.shape)
     a3 = sigmoid(z3)
-    print(a3.shape)
 
     reg_term = (l / (2 * m)) * (sum(sum((t1[1:] ** 2))) + sum(sum((t2[1:] ** 2))))
-    print(reg_term)
     J = (1 / m) * sum(sum((-Y * np.log(a3 + epsilon)) - ((1 - Y) * np.log(1 - a3 + epsilon))))
     J = J + reg_term
 
-    print("BackP")
     # Backpropagation (computing gradient)
     error3 = a3 - Y  # This is a dC/dz for output layer
     der_sig = sigmoid(z2, derivative=True) # add bias 1's to this
@@ -109,8 +119,8 @@ def costfunc(X, t1, t2, y, l=0):
     delta2 = error3.T.dot(a2)
     delta1 = error2.T.dot(a1)
 
-    print(delta2.shape)
-    print(delta1.shape)
+    # print(delta2.shape)
+    # print(delta1.shape)
 
     reg_grad_temp1 = (l / m) * Theta1[1:]
     reg_grad_temp2 = (l / m) * Theta2[1:]
@@ -120,9 +130,27 @@ def costfunc(X, t1, t2, y, l=0):
 
     grad1 = delta1 + reg_param_for_grad1
     grad2 = delta2 + reg_param_for_grad2
-    print(grad1.shape)
-    print(grad2.shape)
-    print(J)
+
+    t1_unr = grad1.T.ravel()
+    t2_unr = grad2.T.ravel()
+    t_unr = np.concatenate([t1_unr, t2_unr], axis=0)
+
+    return J, t_unr
 
 
-costfunc(X, Theta1, Theta2, y, 1)
+# Training
+options= {'maxiter': 100}
+lambda_ = 1
+costFunction = lambda p: costfunc(p, X, y, lambda_)
+# Now, costFunction is a function that takes in only one argument
+res = op.minimize(costFunction,
+                        Theta_unr,
+                        jac=True,
+                        method='TNC',
+                        options=options)
+
+print(res.x)
+
+
+def predict(T1, T2, X):
+    pass
