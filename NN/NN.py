@@ -21,6 +21,21 @@ def normalize(x):
     return x_norm
 
 
+def predict(vec_theta, x, y):
+    t1 = np.reshape(vec_theta[0:10025], (25, 401))
+    t2 = np.reshape(vec_theta[10025:], (10, 26))
+    X1 = np.c_[np.ones([len(x), 1]), x]
+    h1 = sigmoid(X1.dot(t1.T))
+    X2 = np.c_[np.ones([len(h1), 1]), h1]
+    h2 = sigmoid(X2.dot(t2.T))
+    pred_vals = np.array([])
+    for i in range(len(h2)):
+        max_ind = np.argmax(h2[i, :]) + 1  # Adding 1 to match  y-target values where 1=1...10=0
+        pred_vals = np.append(pred_vals, max_ind)
+
+    print('The accuracy of the model:\n  {:.1%}'.format(np.mean(pred_vals == y)))
+
+
 dataset = sio.loadmat('ex4data1.mat', squeeze_me=True)
 weights = sio.loadmat('ex4weights.mat', squeeze_me=True)
 
@@ -152,5 +167,4 @@ res = op.minimize(costFunction,
 print(res.x)
 
 
-def predict(T1, T2, X):
-    pass
+predict(res.x, X, y)
