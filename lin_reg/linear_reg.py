@@ -1,7 +1,15 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-import random as rnd
+import seaborn as sns
+
+#pre precessing
+from sklearn import preprocessing as prep
+
+# ml models
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+
 
 df = pd.read_csv('ex1data1.txt', sep=",", header=None)
 
@@ -31,6 +39,20 @@ X_b = np.c_[np.ones([len(X), 1]), X]
 X_b_n = np.c_[np.ones([len(X), 1]), normalize(X)]
 y = dataset[:, 1:2]
 t = np.zeros([2, 1])
+
+# Model
+
+# Test/Train split
+X_train, X_test, y_train, y_test = train_test_split(df, y, test_size=0.3)
+
+
+lm = LinearRegression()
+model = lm.fit(X_train, y_train)
+
+predictions = lm.predict(X_test)
+
+plt.scatter(y_test, predictions)
+print(model.score(X_test, y_test))
 
 
 def cost_and_grad(y, x, theta, l=0):
@@ -89,18 +111,18 @@ def mpe(x, y, new_theta):
     return 100 - (100 / n) * abs(sum((x.dot(new_theta) - y) / x.dot(new_theta)))
 
 
-print('Theta parameter for not normalized data: ', nt[0], nt[1])
-print('Minimized cost for not normalized data: ', nc)
-print("Accuracy: ", mpe(X_b, y, nt), "%")
-
-
-# print(c_hist)
-print(50 * '@')
-print('Theta parameter for normalized data: ', ntn[0], ntn[1])
-print('Minimized cost for normalized data: ', ncn)
-print("Accuracy: ", mpe(X_b_n, y, ntn), "%")
-
-plotData(y, X_b, h0)
-plotCost(ch)
-plotData(y, X_b_n, h_norm)
-plotCost(chn)
+# print('Theta parameter for not normalized data: ', nt[0], nt[1])
+# print('Minimized cost for not normalized data: ', nc)
+# print("Accuracy: ", mpe(X_b, y, nt), "%")
+#
+#
+# # print(c_hist)
+# print(50 * '@')
+# print('Theta parameter for normalized data: ', ntn[0], ntn[1])
+# print('Minimized cost for normalized data: ', ncn)
+# print("Accuracy: ", mpe(X_b_n, y, ntn), "%")
+#
+# plotData(y, X_b, h0)
+# plotCost(ch)
+# plotData(y, X_b_n, h_norm)
+# plotCost(chn)
