@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+from helper_funcs import *
 
 #pre precessing
 from sklearn import preprocessing as prep
@@ -12,13 +13,6 @@ from sklearn.linear_model import LinearRegression
 
 
 df = pd.read_csv('ex1data1.txt', sep=",", header=None)
-
-
-def sigmoid(x, derivative=False):
-    sigm = 1. / (1. + np.exp(-x))
-    if derivative:
-        return sigm * (1. - sigm)
-    return sigm
 
 
 def normalize(x):
