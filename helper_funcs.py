@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import OneHotEncoder
+
 
 
 # Data set
@@ -30,55 +32,85 @@ def sigmoid(x, derivative=False):
     return sigm
 
 
+def one_hot_encoder(y):
+    pass
+
+
 def softmax(x):
     x_exp = np.exp(x)
     x_sum = np.sum(x_exp, axis=1, keepdims=True)
     return x_exp/x_sum
 
 
-def w_b_initialization(size):
-    w = np.zeros([size, 10])
-    b = 0
+def w_b_initialization(size, classes):
+    w = np.zeros([size, classes])
+    b = np.zeros([1, classes])
     return w, b
 
 
-def cost_grad_log_reg(w, b, X, y):
+def cost_grad_log_reg(w, b, X, y, Multicalss=False):
     """
     w - weights, a np array of size ( features, 1)
     b - bias, a scalar
 
     """
     if not len(X.shape) == 2:
-        X_flattened = X.reshape(X.shape[1]*X.shape[2], -1)
+        X_flattened = X.reshape(X.shape[1]*X.shape[2], -1).T
     else:
         X_flattened = X
     m = X_flattened.shape[1]
 
-    # A = sigmoid(np.dot(w.T, X_flattened) + b)
-    A = softmax(np.dot(w.T, X_flattened) + b)
-    # cost = -1 / m * np.sum(y*np.log(A)+(1-y)*np.log(1-A), axis=1, keepdims=True)
-    cost2 = -np.sum(y * np.log(A))
+    if Multicalss:
+        # Multi-class
+
+        y_train_reshaped = y.reshape(len(y), 1)
+        ohe = OneHotEncoder()
+        y_train_reshaped = ohe.fit_transform(y_train_reshaped).toarray()
+        A = softmax(np.dot(X_flattened, w) + b)
+        xentropy = -np.sum(y_train_reshaped * np.log(A))
+        cost = np.mean(-1 / m * np.sum(y_train_reshaped*np.log(A)+(1-y_train_reshaped)*np.log(1-A), axis=1, keepdims=True))
+
+
+        dw = 1 / m * np.dot(X_flattened.T, (A - y_train_reshaped))
+        db = 1 / m * np.sum(A - y_train_reshaped)
+    else:
+        # Binary
+        A = sigmoid(np.dot(w.T, X_flattened) + b)
+        cost = -1 / m * np.sum(y*np.log(A)+(1-y)*np.log(1-A), axis=1, keepdims=True)
+
+        dw = 1 / m * np.dot(X_flattened, (A - y).T)
+        db = 1 / m * np.sum(A - y)
 
     # grads/derivatives
-    dw = 1 / m * np.dot(X_flattened, (A - y).T)
-    db = 1 / m * np.sum(A - y)
+    cost = np.squeeze(cost)
 
-    cost2 = np.squeeze(cost2)
-
-    return A, dw, db, cost2
+    return dw, db, cost
 
 
-def optimize(w, b, X, y, n_iterations, alpha):
+def optimize(w, b, X, y, n_iterations, alpha, mult=False):
     costs = []
 
     for epoch in range(n_iterations):
 
-        dw, db, cost = cost_grad_log_reg(w, b, X, y)
+        dw, db, cost = cost_grad_log_reg(w, b, X, y, mult)
 
         w = w - alpha*dw
         b = b - alpha*db
         if epoch % 100 == 0:
             costs.append(cost)
+            print(cost)
 
     return costs, w, b
 
+
+def predict(w, b, X):
+
+    if not len(X.shape) == 2:
+        X_flattened = X.reshape(X.shape[1] * X.shape[2], -1).T
+    else:
+        X_flattened = X
+    m = X_flattened.shape[1]
+
+    A = softmax(np.dot(X_flattened, w) + b)
+
+    return A
