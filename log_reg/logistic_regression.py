@@ -31,3 +31,6 @@ print('y_test set shape - {}'.format(y_test.shape))
 
 
 w, b = w_b_initialization(X_train.shape[1] * X_train.shape[2])
+A, cost, dw, db = cost_grad_log_reg(w, b, X_train, y_train)
+
+

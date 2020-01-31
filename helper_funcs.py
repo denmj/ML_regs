@@ -42,5 +42,27 @@ def w_b_initialization(size):
     return w, b
 
 
-def cost_grad_prop(w, b, X, y):
+def cost_grad_log_reg(w, b, X, y):
+    """
+    w - weights, a np array of size ( features, 1)
+    b - bias, a scalar
+
+    """
+    if not len(X.shape) == 2:
+        X_flattened = X.reshape(X.shape[1]*X.shape[2], -1)
+    else:
+        X_flattened = X
+    m = X_flattened.shape[1]
+
+    A = sigmoid(np.dot(w.T, X_flattened) + b)
+    cost = -1 / m * np.sum(y*np.log(A)+(1-y)*np.log(1-A), axis=1, keepdims=True)
+
+    # grads/derivatives
+    dw = 1 / m * np.dot(X_flattened, (A - y).T)
+    db = 1 / m * np.sum(A - y)
+
+    return A, cost, dw, db
+
+
+def optimize(w, b, X, y, n_iterations, alpha):
     pass
