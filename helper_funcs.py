@@ -37,7 +37,7 @@ def softmax(x):
 
 
 def w_b_initialization(size):
-    w = np.zeros([size, 1])
+    w = np.zeros([size, 10])
     b = 0
     return w, b
 
@@ -54,15 +54,31 @@ def cost_grad_log_reg(w, b, X, y):
         X_flattened = X
     m = X_flattened.shape[1]
 
-    A = sigmoid(np.dot(w.T, X_flattened) + b)
-    cost = -1 / m * np.sum(y*np.log(A)+(1-y)*np.log(1-A), axis=1, keepdims=True)
+    # A = sigmoid(np.dot(w.T, X_flattened) + b)
+    A = softmax(np.dot(w.T, X_flattened) + b)
+    # cost = -1 / m * np.sum(y*np.log(A)+(1-y)*np.log(1-A), axis=1, keepdims=True)
+    cost2 = -np.sum(y * np.log(A))
 
     # grads/derivatives
     dw = 1 / m * np.dot(X_flattened, (A - y).T)
     db = 1 / m * np.sum(A - y)
 
-    return A, cost, dw, db
+    cost2 = np.squeeze(cost2)
+
+    return A, dw, db, cost2
 
 
 def optimize(w, b, X, y, n_iterations, alpha):
-    pass
+    costs = []
+
+    for epoch in range(n_iterations):
+
+        dw, db, cost = cost_grad_log_reg(w, b, X, y)
+
+        w = w - alpha*dw
+        b = b - alpha*db
+        if epoch % 100 == 0:
+            costs.append(cost)
+
+    return costs, w, b
+
