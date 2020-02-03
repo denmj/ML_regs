@@ -64,7 +64,7 @@ def cost_grad_log_reg(w, b, X, y, Multicalss=False):
         # Multi-class
 
         y_train_reshaped = y.reshape(len(y), 1)
-        ohe = OneHotEncoder()
+        ohe = OneHotEncoder(categories='auto')
         y_train_reshaped = ohe.fit_transform(y_train_reshaped).toarray()
         A = softmax(np.dot(X_flattened, w) + b)
         xentropy = -np.sum(y_train_reshaped * np.log(A))
@@ -114,3 +114,8 @@ def predict(w, b, X):
     A = softmax(np.dot(X_flattened, w) + b)
 
     return A
+
+
+def accuracy_logitic(Y_target, Y_pred):
+    accuracy = np.mean(Y_target != Y_pred)
+    return accuracy
