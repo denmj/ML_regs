@@ -18,9 +18,6 @@ class LogisticRegression_manual:
         self.grad_and_cost()
         self.init_weights()
 
-
-        pass
-
     def init_weights(self):
         self.w = np.zeros([self.x_train.shape[1], self.classes])
         self.b = np.zeros([1, self.classes])
@@ -34,7 +31,7 @@ class LogisticRegression_manual:
         array
         of
         size(features, 1)
-        b - bias, a
+        b - bias
         scalar
 
         """
@@ -47,7 +44,6 @@ class LogisticRegression_manual:
 
         if self.multiclass:
             # Multi-class
-
             y_train_reshaped = self.y_train.reshape(len(self.y_train), 1)
             ohe = OneHotEncoder()
             y_train_reshaped = ohe.fit_transform(y_train_reshaped).toarray()
