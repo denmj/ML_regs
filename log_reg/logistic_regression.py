@@ -17,8 +17,8 @@ from sklearn.linear_model import LogisticRegressionCV
 dataset = sio.loadmat('ex3data1.mat', squeeze_me=True)
 weights = sio.loadmat('ex3weights.mat', squeeze_me=True)
 
-X_data_orig = dataset['X']
-y_data_orig = dataset['y']
+X_data_orig = dataset['X']  # [5000, 400]
+y_data_orig = dataset['y']  # [5000, 1]
 
 # show_images(random_pick(X_data_orig, 20), 5, 4)
 
@@ -34,9 +34,9 @@ classes = 10
 # clf = LogisticRegressionCV(cv = 5, max_iter=1000, random_state=0).fit(X_train, y_train)
 # print(clf.score(X_train, y_train))
 
-
-w, b = w_b_initialization(X_train.shape[1], classes)
-
+parameters = parameters_initialization([X_train.shape[1], classes, 1])
+w = parameters['W1'].T
+b = parameters['b1'].T
 dw, db, cost = cost_grad_log_reg(w, b, X_train, y_train, Multicalss=True)
 costs, w1, b1 = optimize(w, b, X_train, y_train, epochs, learn_rate,  mult=True)
 
