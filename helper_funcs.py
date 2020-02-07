@@ -51,7 +51,7 @@ def softmax(x):
 
 
 def relu(x):
-    return np.maximum(0, X)
+    return np.maximum(0, x)
 
 
 #
@@ -79,12 +79,17 @@ def linear_activation(a, W, b, activation):
         Z, linear_func_cache = linear_func(a, W, b)
         sigmoid_func_cache = Z
         A = relu(Z)
-    cache = (linear_func_cache, sigmoid_func_cache)
+    elif activation == "softmax":
+        Z, linear_func_cache = linear_func(a, W, b)
+        sigmoid_func_cache = Z
+        A = softmax(Z)
+    cache = list(linear_func_cache)
+    cache.append(sigmoid_func_cache)
 
     return A, cache
 
 
-def forward_prop(X, params):
+def linear_activation_forward(X, params):
     pass
 
 

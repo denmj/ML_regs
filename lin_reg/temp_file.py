@@ -9,32 +9,54 @@ dataset = sio.loadmat('C:/Users/u325539/Desktop/ML/proj/ML_regs/log_reg/ex3data1
 
 X_data_orig = dataset['X'] # [400, m]
 y_data_orig = dataset['y']
-print(X_data_orig.shape)
-
-classes = 10
 
 INPUT_LAYER = 400
 HIDDEN_L_1 = 64
 HIDDEN_L_2 = 32
+HIDDEN_L_3 = 32
 OUTPUT_LAYER = 10
-l = [X_data_orig.shape[1], classes, 1]
-params  = parameters_initialization(l)
 
-print(params.keys())
+dims = [INPUT_LAYER, HIDDEN_L_1, HIDDEN_L_2,HIDDEN_L_3, OUTPUT_LAYER]
+params = parameters_initialization(dims)
 
-print("shape of w1: {}".format(params['W1'].shape))
+print("Initialized parameters for network: ",  params.keys())
+print("X data set: ", X_data_orig.shape)
 
-print("shape of w1_1: {}".format(params['W2'].shape))
+for key in params:
+    print(key, params[key].shape)
 
-# print("shape of w3: {}".format(params['W3'].shape))
-# print("shape of b3: {}".format(params['b3'].shape))
-print(len(params) // 2)
+# Layer 1 linear step to get Z1
+print("Layer 1: ")
+A1, cache1 = linear_activation(X_data_orig.T, params["W1"], params["b1"], "relu")
+
+print("A1: ",  A1.shape)
+print("Saved in cache: A(l-1), W(l), b(l), Z(l)")
+for i in cache1:
+    print(i.shape)
 
 
-for layer in range (1, (len(params) //2) + 1 ):
-    print("Layer number {} parameters".format(layer))
+print("Layer 2:")
+A2, cache2 = linear_activation(A1, params["W2"], params["b2"], "relu")
 
-    print("Layer shape is {} ".format(params['W' + str(layer)].shape))
-    print(params['W' + str(layer)])
-    print(params['b' + str(layer)])
 
+print("A2: ",  A2.shape)
+print("Saved in cache: A(l-1), W(l), b(l), Z(l)")
+for i in cache2:
+    print(i.shape)
+
+A3, cache3 = linear_activation(A2, params["W3"], params["b3"], "relu")
+
+
+print("A3: ",  A3.shape)
+print("Saved in cache: A(l-1), W(l), b(l), Z(l)")
+for i in cache3:
+    print(i.shape)
+
+A4, cache4 = linear_activation(A3, params["W4"], params["b4"], "softmax")
+
+print("A4: ",  A4.shape)
+print("Saved in cache: A(l-1), W(l), b(l), Z(l)")
+for i in cache3:
+    print(i.shape)
+
+print(A4)
