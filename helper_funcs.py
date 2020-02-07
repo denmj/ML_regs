@@ -47,11 +47,17 @@ def sigmoid(x, derivative=False):
 def softmax(x):
     x_exp = np.exp(x)
     x_sum = np.sum(x_exp, axis=1, keepdims=True)
-    return x_exp / x_sum
+    softmax = x_exp / x_sum
+    return softmax
 
 
-def relu(x):
-    return np.maximum(0, x)
+def relu(x, derivative=False):
+    relu = np.maximum(0, x)
+    if derivative:
+        x[x<=0] = 0
+        x[x>0] = 1
+        relu = x
+    return relu
 
 
 #
@@ -89,8 +95,29 @@ def linear_activation(a, W, b, activation):
     return A, cache
 
 
-def linear_activation_forward(X, params):
+def linear_backward():
     pass
+
+
+def linear_activation_forward(X, params):
+    A = X
+    caches = []
+    L = len(params) // 2
+    for l in range(1, L):
+        A_previous = A
+        A, cache = linear_activation(A_previous, params["W" + str(l)], params["b" + str(l)], "relu")
+        caches.append(cache)
+    AL, cache = linear_activation(A, params["W" + str(L)], params["b" + str(L)], "softmax")
+
+    caches.append(cache)
+    return  AL, caches
+
+
+def compute_cost(Y_hat, Y):
+    m = Y.shape[0]
+    cost = np.mean(-1 / m * np.sum(Y * np.log(Y_hat) + (1 - Y) * np.log(1 - Y_hat), axis=1, keepdims=True))
+    cost = np.squeeze(cost)
+    return cost
 
 
 def cost_grad_log_reg(w, b, X, y, Multicalss=False):

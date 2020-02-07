@@ -7,8 +7,8 @@ dataset = sio.loadmat('C:/Users/u325539/Desktop/ML/proj/ML_regs/log_reg/ex3data1
 
 # weights = sio.loadmat('log_reg/ex3weights.mat', squeeze_me=True)
 
-X_data_orig = dataset['X'] # [400, m]
-y_data_orig = dataset['y']
+X_data_orig = dataset['X']  # [400, m]
+y_data_orig = dataset['y']  # [1, m]
 
 INPUT_LAYER = 400
 HIDDEN_L_1 = 64
@@ -21,6 +21,7 @@ params = parameters_initialization(dims)
 
 print("Initialized parameters for network: ",  params.keys())
 print("X data set: ", X_data_orig.shape)
+print("y data setL ", y_data_orig.shape)
 
 for key in params:
     print(key, params[key].shape)
@@ -59,4 +60,26 @@ print("Saved in cache: A(l-1), W(l), b(l), Z(l)")
 for i in cache3:
     print(i.shape)
 
-print(A4)
+print(len(params)// 2)
+
+for i in range(1, len(params)//2):
+    print(i)
+print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+print("Forward propagation")
+AL, caches = linear_activation_forward(X_data_orig.T, params)
+
+print("A4 shape is : {}".format(AL.shape))
+
+
+print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+
+c = compute_cost(AL, y_data_orig)
+print("Cost: ", c)
+print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+print("Back propagation")
+
+dA_L = - np.divide(y_data_orig, AL) - np.divide((1 - y_data_orig), (1 - AL))
+dZ_L = dA_L - y_data_orig
+
+print(dA_L.shape)
+print(dZ_L.shape)
