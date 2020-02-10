@@ -37,26 +37,31 @@ classes = 10
 parameters = parameters_initialization([X_train.shape[1], classes, 1])
 w = parameters['W1'].T
 b = parameters['b1'].T
+
+print(X_train.shape)
+print(y_train.shape)
+
 dw, db, cost = cost_grad_log_reg(w, b, X_train, y_train, Multicalss=True)
-costs, w1, b1 = optimize(w, b, X_train, y_train, epochs, learn_rate,  mult=True)
+print(cost)
+# costs, w1, b1 = optimize(w, b, X_train, y_train, epochs, learn_rate,  mult=True)
 
 # ----------------------------
 # Train
-A = predict(w1, b1, X_train)
-A1 = np.argmax(A, axis=1)
-
-# Test
-A_test = predict(w1, b1, X_test)
-A1_test = np.argmax(A_test, axis=1)
-train_accuracy = accuracy_logitic(A1, y_train)
-test_accuracy = accuracy_logitic(A1_test, y_test)
-
-print("Train set accuracy: {}".format(train_accuracy))
-print(A1[0:20])
-print(y_train[0:20]-1)
-print("Test set accuracy: {}".format(test_accuracy))
-print(A1_test[0:20])
-print(y_test[0:20]-1)
+# A = predict(w1, b1, X_train)
+# A1 = np.argmax(A, axis=1)
+#
+# # Test
+# A_test = predict(w1, b1, X_test)
+# A1_test = np.argmax(A_test, axis=1)
+# train_accuracy = accuracy_logitic(A1, y_train)
+# test_accuracy = accuracy_logitic(A1_test, y_test)
+#
+# print("Train set accuracy: {}".format(train_accuracy))
+# print(A1[0:20])
+# print(y_train[0:20]-1)
+# print("Test set accuracy: {}".format(test_accuracy))
+# print(A1_test[0:20])
+# print(y_test[0:20]-1)
 
 
 # model = LogisticRegression_manual(X_train, y_train, epochs, learn_rate, multiclass=True, classes=10)

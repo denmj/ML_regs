@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import OneHotEncoder
+from scipy.special import softmax as sf
 
 
 #
@@ -63,7 +64,7 @@ def relu(x, derivative=False):
 #
 # Helper func for models
 #
-def parameters_initialization(layers_dim, w_values = None):
+def parameters_initialization(layers_dim, w_values=None):
     parameters = {}
     if w_values == "zeros":
         for l in range(1, len(layers_dim)):
@@ -88,7 +89,7 @@ def linear_activation(a, W, b, activation):
     elif activation == "softmax":
         Z, linear_func_cache = linear_func(a, W, b)
         activation_cache = Z
-        A = softmax(Z)
+        A = sf(Z)
     cache = (linear_func_cache, activation_cache)
     return A, cache
 
@@ -104,15 +105,20 @@ def linear_backward(dZ, cache):
     return dA_prev, dW, db
 
 
-def linear_activation_backward(dA, cache, activation):
+def linear_activation_backward(dA, Y, cache, activation=None):
     linear_cache, activation_cache = cache
-
+    print(dA.shape)
+    print(Y.shape)
     if activation == "relu":
         dZ = dA * relu(activation_cache, derivative=True)
         dA_prev, dW, db = linear_backward(dZ, linear_cache)
 
-    elif activation == "sigmoid":
+    if activation == "sigmoid":
         dZ = dA * sigmoid(activation_cache, derivative=True)
+        dA_prev, dW, db = linear_backward(dZ, linear_cache)
+    else:
+
+        dZ = dA - Y
         dA_prev, dW, db = linear_backward(dZ, linear_cache)
     return dA_prev, dW, db
 
@@ -123,14 +129,13 @@ def linear_model_backward(AL, Y, caches):
     m = AL.shape[1]
     # Y = Y.reshape(AL.shape)
     dAL = -(np.divide(Y, AL) - np.divide(1 - Y, 1 - AL))
-
     current_cache = caches[L - 1]
-    grads["dA" + str(L-1)], grads["dW" + str(L)], grads["db" + str(L)] = linear_activation_backward(dAL, current_cache, 'sigmoid')
+    grads["dA" + str(L-1)], grads["dW" + str(L)], grads["db" + str(L)] = linear_activation_backward(dAL, Y, current_cache)
 
     for l in reversed(range(L - 1)):
 
         current_cache = caches[l]
-        dA_prev_temp, dW_temp, db_temp = linear_activation_backward(grads["dA" + str(l + 1)], current_cache, 'relu')
+        dA_prev_temp, dW_temp, db_temp = linear_activation_backward(grads["dA" + str(l + 1)], Y, current_cache, 'relu')
         grads["dA" + str(l)] = dA_prev_temp
         grads["dW" + str(l + 1)] = dW_temp
         grads["db" + str(l + 1)] = db_temp
@@ -152,8 +157,15 @@ def linear_activation_forward(X, params):
 
 
 def compute_cost(Y_hat, Y):
-    m = Y.shape[0]
+    # y_train_reshaped = Y.reshape(len(Y), 1)
+    # ohe = OneHotEncoder(categories='auto')
+    # y_train_reshaped = ohe.fit_transform(y_train_reshaped).toarray()
+    # y_train_reshaped = y_train_reshaped.T
+    m = 5000
+    print(Y_hat.shape)
+    print(Y.shape)
     cost = np.mean(-1 / m * np.sum(Y * np.log(Y_hat) + (1 - Y) * np.log(1 - Y_hat), axis=1, keepdims=True))
+
     cost = np.squeeze(cost)
     return cost
 
@@ -169,14 +181,16 @@ def cost_grad_log_reg(w, b, X, y, Multicalss=False):
     else:
         X_flattened = X
     m = X_flattened.shape[1]
-
+    print(m)
     if Multicalss:
         # Multi-class
 
         y_train_reshaped = y.reshape(len(y), 1)
         ohe = OneHotEncoder(categories='auto')
         y_train_reshaped = ohe.fit_transform(y_train_reshaped).toarray()
+        print(y_train_reshaped.shape)
         A = softmax(np.dot(X_flattened, w) + b)
+        print(A.shape)
         xentropy = -np.sum(y_train_reshaped * np.log(A))
         cost = np.mean(-1 / m * np.sum(y_train_reshaped * np.log(A) + (1 - y_train_reshaped) * np.log(1 - A), axis=1,
                                        keepdims=True))
@@ -236,4 +250,35 @@ def parameters_update(parameters, grads, alpha):
     for l in range(L):
         parameters["W" + str(l + 1)] = parameters["W" + str(l + 1)] - alpha * grads["dW" + str(l + 1)]
         parameters["b" + str(l + 1)] = parameters["b" + str(l + 1)] - alpha * grads["db" + str(l + 1)]
+    return parameters
+
+
+def L_layer_model(X, Y, layers_dims, learning_rate=0.0075, num_iterations=3000, print_cost=False):  # lr was 0.009
+
+    np.random.seed(1)
+    costs = []
+    parameters = parameters_initialization(layers_dims)
+
+    # Loop (gradient descent)
+    for i in range(0, num_iterations):
+
+        AL, caches = linear_activation_forward(X.T, parameters)
+        cost = compute_cost(AL, Y)
+        grads = linear_model_backward(AL, Y, caches)
+
+        parameters = parameters_update(parameters, grads, learning_rate)
+
+        # Print the cost every 100 training example
+        if print_cost and i % 100 == 0:
+            print("Cost after iteration %i: %f" % (i, cost))
+        if print_cost and i % 100 == 0:
+            costs.append(cost)
+
+    # plot the cost
+    plt.plot(np.squeeze(costs))
+    plt.ylabel('cost')
+    plt.xlabel('iterations (per hundreds)')
+    plt.title("Learning rate =" + str(learning_rate))
+    plt.show()
+
     return parameters
