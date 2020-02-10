@@ -79,24 +79,62 @@ def parameters_initialization(layers_dim, w_values = None):
 def linear_activation(a, W, b, activation):
     if activation == "sigmoid":
         Z, linear_func_cache = linear_func(a, W, b)
-        sigmoid_func_cache = Z
+        activation_cache = Z
         A = sigmoid(Z)
     elif activation == "relu":
         Z, linear_func_cache = linear_func(a, W, b)
-        sigmoid_func_cache = Z
+        activation_cache = Z
         A = relu(Z)
     elif activation == "softmax":
         Z, linear_func_cache = linear_func(a, W, b)
-        sigmoid_func_cache = Z
+        activation_cache = Z
         A = softmax(Z)
-    cache = list(linear_func_cache)
-    cache.append(sigmoid_func_cache)
-
+    cache = (linear_func_cache, activation_cache)
     return A, cache
 
 
-def linear_backward():
-    pass
+def linear_backward(dZ, cache):
+    A_prev, W, b = cache
+    m = A_prev.shape[1]
+
+    dW = (1 / m) * np.dot(dZ, A_prev.T)
+    db = (1 / m) * np.sum(dZ, axis=1, keepdims=True)
+    dA_prev = np.dot(W.T, dZ)
+
+    return dA_prev, dW, db
+
+
+def linear_activation_backward(dA, cache, activation):
+    linear_cache, activation_cache = cache
+
+    if activation == "relu":
+        dZ = dA * relu(activation_cache, derivative=True)
+        dA_prev, dW, db = linear_backward(dZ, linear_cache)
+
+    elif activation == "sigmoid":
+        dZ = dA * sigmoid(activation_cache, derivative=True)
+        dA_prev, dW, db = linear_backward(dZ, linear_cache)
+    return dA_prev, dW, db
+
+
+def linear_model_backward(AL, Y, caches):
+    grads = {}
+    L = len(caches)
+    m = AL.shape[1]
+    # Y = Y.reshape(AL.shape)
+    dAL = -(np.divide(Y, AL) - np.divide(1 - Y, 1 - AL))
+
+    current_cache = caches[L - 1]
+    grads["dA" + str(L-1)], grads["dW" + str(L)], grads["db" + str(L)] = linear_activation_backward(dAL, current_cache, 'sigmoid')
+
+    for l in reversed(range(L - 1)):
+
+        current_cache = caches[l]
+        dA_prev_temp, dW_temp, db_temp = linear_activation_backward(grads["dA" + str(l + 1)], current_cache, 'relu')
+        grads["dA" + str(l)] = dA_prev_temp
+        grads["dW" + str(l + 1)] = dW_temp
+        grads["db" + str(l + 1)] = db_temp
+    return grads
 
 
 def linear_activation_forward(X, params):
@@ -110,7 +148,7 @@ def linear_activation_forward(X, params):
     AL, cache = linear_activation(A, params["W" + str(L)], params["b" + str(L)], "softmax")
 
     caches.append(cache)
-    return  AL, caches
+    return AL, caches
 
 
 def compute_cost(Y_hat, Y):
@@ -190,3 +228,12 @@ def predict(w, b, X):
 def accuracy_logitic(Y_target, Y_pred):
     accuracy = np.mean(Y_target != Y_pred)
     return accuracy
+
+
+def parameters_update(parameters, grads, alpha):
+    L = len(parameters) // 2
+
+    for l in range(L):
+        parameters["W" + str(l + 1)] = parameters["W" + str(l + 1)] - alpha * grads["dW" + str(l + 1)]
+        parameters["b" + str(l + 1)] = parameters["b" + str(l + 1)] - alpha * grads["db" + str(l + 1)]
+    return parameters
