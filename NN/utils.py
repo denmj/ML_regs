@@ -96,16 +96,23 @@ def initialize_parameters(n_x, n_h, n_y):
     return parameters
 
 
-def initialize_parameters_deep(layer_dims):
+def initialize_parameters_deep(layer_dims, method="he"):
 
     np.random.seed(1)
     parameters = {}
     L = len(layer_dims)
 
     for l in range(1, L):
-        parameters['W' + str(l)] = np.random.randn(layer_dims[l], layer_dims[l - 1]) / np.sqrt(
-            layer_dims[l - 1])  # *0.01
-        parameters['b' + str(l)] = np.zeros((layer_dims[l], 1))
+        if method == "zeros":
+            parameters['W' + str(l)] = np.zeros((layer_dims[l], layer_dims[l - 1]))
+            parameters['b' + str(l)] = np.zeros((layer_dims[l], 1))
+        elif method == "rand":
+            parameters['W' + str(l)] = np.random.randn(layer_dims[l], layer_dims[l - 1]) * 10
+            parameters['b' + str(l)] = np.zeros((layer_dims[l], 1))
+        elif method == "he":
+            parameters['W' + str(l)] = np.random.randn(layer_dims[l], layer_dims[l - 1]) / np.sqrt(layer_dims[l - 1])
+            parameters['b' + str(l)] = np.zeros((layer_dims[l], 1))
+
         assert (parameters['W' + str(l)].shape == (layer_dims[l], layer_dims[l - 1]))
         assert (parameters['b' + str(l)].shape == (layer_dims[l], 1))
 
@@ -162,6 +169,18 @@ def compute_cost(AL, Y):
     cost = np.squeeze(cost)  # To make sure your cost's shape is what we expect (e.g. this turns [[17]] into 17).
     # assert (cost.shape == ())
 
+    return cost
+
+
+def compute_cost_with_regulirazation(AL, Y, parameters, lambd):
+    m = Y.shape[1]
+    W1 = parameters["W1"]
+    W2 = parameters["W2"]
+    W3 = parameters["W3"]
+    cross_entropy_cost = compute_cost(AL, Y)
+
+    L2_regularization_cost = lambd * (np.sum(np.square(W1)) + np.sum(np.square(W2)) + np.sum(np.square(W3))) / (2 * m)
+    cost = cross_entropy_cost + L2_regularization_cost
     return cost
 
 
