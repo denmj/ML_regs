@@ -58,7 +58,7 @@ def L_layer_model(X, Y, layers_dims, learning_rate=0.0075, num_iterations=3000, 
             cost = compute_cost_with_regulirazation(AL, Y, caches, lambd)
 
         # Back propagation
-        grads = L_model_backward(AL, Y, caches)
+        grads = L_model_backward(AL, Y, caches, lambd)
 
         # Update grads
         parameters = update_parameters(parameters, grads, learning_rate)
@@ -78,7 +78,22 @@ def L_layer_model(X, Y, layers_dims, learning_rate=0.0075, num_iterations=3000, 
 
     return parameters
 
+#
+# par = initialize_parameters_deep(layers_dims)
+# AL, caches = L_model_forward(train_x, par)
+# print(len(caches))
+#
+# print(train_x.shape)
+# for i in par:
+#     print(i, par[i].shape)
+#
+# sum_of_W = 0
+# for numb in range(len(caches)):
+#     print(caches[numb][0][1].shape)
+#     print(np.sum(np.square(caches[numb][0][1])))
+#     sum_of_W = sum_of_W + np.sum(np.square(caches[numb][0][1]))
+# print(sum_of_W)
 
-# parameters = L_layer_model(train_x, train_y, layers_dims, num_iterations = 2500, print_cost = True)
-parameters_2 = L_layer_model(x_train_dig, y_train_dig, layers_dims_dig, num_iterations = 2500, print_cost = True)
+parameters = L_layer_model(train_x, train_y, layers_dims, num_iterations = 2500, print_cost = True, lambd=0.1)
+# parameters_2 = L_layer_model(x_train_dig, y_train_dig, layers_dims_dig, num_iterations = 2500, print_cost = True, lambd=0.1)
 

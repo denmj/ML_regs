@@ -172,12 +172,18 @@ def compute_cost(AL, Y):
 
 def compute_cost_with_regulirazation(AL, Y, parameters, lambd):
     m = Y.shape[1]
-    W1 = parameters["W1"]
-    W2 = parameters["W2"]
-    W3 = parameters["W3"]
+    sum_of_W = 0
+    for numb in range(len(parameters)):
+        sum_of_W = sum_of_W + np.sum(np.square(parameters[numb][0][1]))
+
+    # W1 = parameters["W1"]
+    # W2 = parameters["W2"]
+    # W3 = parameters["W3"]
     cross_entropy_cost = compute_cost(AL, Y)
 
-    L2_regularization_cost = lambd * (np.sum(np.square(W1)) + np.sum(np.square(W2)) + np.sum(np.square(W3))) / (2 * m)
+    # L2_regularization_cost = lambd * (np.sum(np.square(W1)) + np.sum(np.square(W2)) + np.sum(np.square(W3))) / (2 * m)
+    L2_regularization_cost = lambd * (sum_of_W) / (2 * m)
+
     cost = cross_entropy_cost + L2_regularization_cost
     return cost
 
@@ -212,21 +218,27 @@ def linear_backward_with_regularization(dZ, cache, lambd):
     return dA_prev, dW, db
 
 
-def linear_activation_backward(dA, cache, activation):
+def linear_activation_backward(dA, cache, lambd, activation):
     linear_cache, activation_cache = cache
 
     if activation == "relu":
         dZ = relu_backward(dA, activation_cache)
-        dA_prev, dW, db = linear_backward(dZ, linear_cache)
+        if lambd == 0:
+            dA_prev, dW, db = linear_backward(dZ, linear_cache)
+        else:
+            dA_prev, dW, db = linear_backward_with_regularization(dZ, linear_cache, lambd)
 
     elif activation == "sigmoid":
         dZ = sigmoid_backward(dA, activation_cache)
-        dA_prev, dW, db = linear_backward(dZ, linear_cache)
+        if lambd == 0:
+            dA_prev, dW, db = linear_backward(dZ, linear_cache)
+        else:
+            dA_prev, dW, db = linear_backward_with_regularization(dZ, linear_cache, lambd)
 
     return dA_prev, dW, db
 
 
-def L_model_backward(AL, Y, caches):
+def L_model_backward(AL, Y, caches, lambd):
     grads = {}
     L = len(caches)  # the number of layers
     m = AL.shape[1]
@@ -235,11 +247,14 @@ def L_model_backward(AL, Y, caches):
     current_cache = caches[L - 1]
     grads["dA" + str(L - 1)], grads["dW" + str(L)], grads["db" + str(L)] = linear_activation_backward(dAL,
                                                                                                       current_cache,
+                                                                                                      lambd,
                                                                                                       activation="sigmoid")
 
     for l in reversed(range(L - 1)):
         current_cache = caches[l]
-        dA_prev_temp, dW_temp, db_temp = linear_activation_backward(grads["dA" + str(l + 1)], current_cache,
+        dA_prev_temp, dW_temp, db_temp = linear_activation_backward(grads["dA" + str(l + 1)],
+                                                                    current_cache,
+                                                                    lambd,
                                                                     activation="relu")
         grads["dA" + str(l)] = dA_prev_temp
         grads["dW" + str(l + 1)] = dW_temp
