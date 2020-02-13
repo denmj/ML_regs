@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import h5py
 
 
-
 #
 # Data set
 #
@@ -26,7 +25,6 @@ def show_images(X_data, cols, rows, cmap=None):
         fig.add_subplot(rows, cols, image_num + 1)
         plt.imshow(X_reshaped[image_num], cmap=cmap)
     plt.show()
-
 
 
 def sigmoid(Z):
@@ -199,6 +197,21 @@ def linear_backward(dZ, cache):
     return dA_prev, dW, db
 
 
+def linear_backward_with_regularization(dZ, cache, lambd):
+    A_prev, W, b = cache
+    m = A_prev.shape[1]
+
+    dW = 1. / m * np.dot(dZ, A_prev.T) + (lambd * W) / m
+    db = 1. / m * np.sum(dZ, axis=1, keepdims=True)
+    dA_prev = np.dot(W.T, dZ)
+
+    assert (dA_prev.shape == A_prev.shape)
+    assert (dW.shape == W.shape)
+    assert (db.shape == b.shape)
+
+    return dA_prev, dW, db
+
+
 def linear_activation_backward(dA, cache, activation):
     linear_cache, activation_cache = cache
 
@@ -236,8 +249,8 @@ def L_model_backward(AL, Y, caches):
 
 
 def update_parameters(parameters, grads, learning_rate):
-    L = len(parameters) // 2  # number of layers in the neural network
 
+    L = len(parameters) // 2
     for l in range(L):
         parameters["W" + str(l + 1)] = parameters["W" + str(l + 1)] - learning_rate * grads["dW" + str(l + 1)]
         parameters["b" + str(l + 1)] = parameters["b" + str(l + 1)] - learning_rate * grads["db" + str(l + 1)]

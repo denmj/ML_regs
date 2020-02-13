@@ -1,4 +1,5 @@
-from NN.utils import initialize_parameters_deep, L_model_forward, L_model_backward, update_parameters, load_data
+from NN.utils import initialize_parameters_deep, L_model_forward, L_model_backward, update_parameters, load_data, \
+    compute_cost_with_regulirazation
 from helper_funcs import *
 import scipy.io as sio
 from utils import *
@@ -41,22 +42,34 @@ print ("train_x_dig's shape: " + str(x_train_dig.shape))
 print ("test_x_dig's shape: " + str(y_train_dig.shape))
 
 
-def L_layer_model(X, Y, layers_dims, learning_rate=0.0075, num_iterations=3000, print_cost=False):
+def L_layer_model(X, Y, layers_dims, learning_rate=0.0075, num_iterations=3000, print_cost=False, lambd = 0):
 
     np.random.seed(1)
     costs = []  # keep track of cost
     parameters = initialize_parameters_deep(layers_dims)
     for i in range(0, num_iterations):
+        # Forward propagation
         AL, caches = L_model_forward(X, parameters)
-        cost = compute_cost(AL, Y)
+
+        # Cost
+        if lambd == 0:
+            cost = compute_cost(AL, Y)
+        else:
+            cost = compute_cost_with_regulirazation(AL, Y, caches, lambd)
+
+        # Back propagation
         grads = L_model_backward(AL, Y, caches)
+
+        # Update grads
         parameters = update_parameters(parameters, grads, learning_rate)
+
+        # Print the cost
         if print_cost and i % 100 == 0:
             print ("Cost after iteration %i: %f" %(i, cost))
         if print_cost and i % 100 == 0:
             costs.append(cost)
 
-    # plot the cost
+    # Plot the cost
     plt.plot(np.squeeze(costs))
     plt.ylabel('cost')
     plt.xlabel('iterations (per hundreds)')
