@@ -124,7 +124,7 @@ def random_mini_batches(X, Y, mini_batch_size=64, seed=0):
     # Shuffle X Y
     permutation = list(np.random.permutation(m))
     X_shuffled = X[:, permutation]
-    Y_shuffled = Y[:, permutation].reshape((1, m))
+    Y_shuffled = Y[:, permutation].reshape((1, m)) # check for multi class
 
     num_complete_minibatches = math.floor(m/mini_batch_size)
 
@@ -172,7 +172,6 @@ def L_model_forward(X, parameters):
         A, cache = linear_activation_forward(A_prev, parameters['W' + str(l)], parameters['b' + str(l)],
                                              activation="relu")
         caches.append(cache)
-
     AL, cache = linear_activation_forward(A, parameters['W' + str(L)], parameters['b' + str(L)], activation="sigmoid")
     caches.append(cache)
     return AL, caches

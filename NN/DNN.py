@@ -54,6 +54,7 @@ def L_layer_model(X, Y, layers_dims, learning_rate=0.0075, num_iterations=3000,
     costs = []  # keep track of cost
     seed = 10
     m = X.shape[1]
+    t =0
 
     # Parameter initialization
     parameters = initialize_parameters_deep(layers_dims)
@@ -65,7 +66,6 @@ def L_layer_model(X, Y, layers_dims, learning_rate=0.0075, num_iterations=3000,
         v = initialize_velocity(parameters)
     elif optimizer == "adam":
         v, s = initialize_adam(parameters)
-
     # Gradient Descent
     for i in range(0, num_iterations):
 
@@ -73,7 +73,6 @@ def L_layer_model(X, Y, layers_dims, learning_rate=0.0075, num_iterations=3000,
         seed = seed+1
         minibatches = random_mini_batches(X, Y, mini_batch_size, seed)
         cost_total = 0
-
         for minibatch in minibatches:
 
             # mini-batch
@@ -95,10 +94,10 @@ def L_layer_model(X, Y, layers_dims, learning_rate=0.0075, num_iterations=3000,
             if optimizer == "gd":
                 parameters = update_parameters(parameters, grads, learning_rate)
             elif optimizer == "momentum":
-                parameters = update_parameters_with_momentum(parameters, grads, v, beta, learning_rate)
+                parameters, v = update_parameters_with_momentum(parameters, grads, v, beta, learning_rate)
             elif optimizer == "adam":
                 t = t + 1
-                parameters = update_parameters_with_adam(parameters, grads, v, s, t, learning_rate, beta1, beta2, epsilon)
+                parameters, v, s = update_parameters_with_adam(parameters, grads, v, s, t, learning_rate, beta1, beta2, epsilon)
 
         cost_avg = cost_total / m
 
@@ -119,7 +118,7 @@ def L_layer_model(X, Y, layers_dims, learning_rate=0.0075, num_iterations=3000,
 
 
 start = time.clock()
-parameters = L_layer_model(train_x, train_y, layers_dims, num_iterations = 2500, print_cost = True, lambd=0.001)
+parameters = L_layer_model(x_train_dig, y_train_dig, layers_dims_dig, num_iterations = 2500, print_cost = True, lambd=0,  optimizer="momentum")
 # parameters_2 = L_layer_model(x_train_dig, y_train_dig, layers_dims_dig, num_iterations = 2500, print_cost = True, lambd=0.1)
 
 end = time.clock()
