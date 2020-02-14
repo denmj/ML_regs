@@ -59,11 +59,11 @@ def sigmoid_backward(dA, cache):
 
 
 def load_data():
-    train_dataset = h5py.File('C:/Users/denis/Desktop/ML/ML_regs/NN/train_catvnoncat.h5', "r")
+    train_dataset = h5py.File('C:/Users/u325539/Desktop/ML/proj/ML_regs/NN/train_catvnoncat.h5', "r")
     train_set_x_orig = np.array(train_dataset["train_set_x"][:])  # your train set features
     train_set_y_orig = np.array(train_dataset["train_set_y"][:])  # your train set labels
 
-    test_dataset = h5py.File('C:/Users/denis/Desktop/ML/ML_regs/NN/test_catvnoncat.h5', "r")
+    test_dataset = h5py.File('C:/Users/u325539/Desktop/ML/proj/ML_regs/NN/test_catvnoncat.h5', "r")
     test_set_x_orig = np.array(test_dataset["test_set_x"][:])  # your test set features
     test_set_y_orig = np.array(test_dataset["test_set_y"][:])  # your test set labels
 
@@ -150,12 +150,10 @@ def linear_forward(A, W, b):
 
 def linear_activation_forward(A_prev, W, b, activation):
     if activation == "sigmoid":
-        # Inputs: "A_prev, W, b". Outputs: "A, activation_cache".
         Z, linear_cache = linear_forward(A_prev, W, b)
         A, activation_cache = sigmoid(Z)
 
     elif activation == "relu":
-        # Inputs: "A_prev, W, b". Outputs: "A, activation_cache".
         Z, linear_cache = linear_forward(A_prev, W, b)
         A, activation_cache = relu(Z)
 
@@ -177,8 +175,6 @@ def L_model_forward(X, parameters):
 
     AL, cache = linear_activation_forward(A, parameters['W' + str(L)], parameters['b' + str(L)], activation="sigmoid")
     caches.append(cache)
-
-    # assert (AL.shape == (1, X.shape[1]))
     return AL, caches
 
 
@@ -187,8 +183,6 @@ def compute_cost(AL, Y):
     cost = np.mean(-1 / m * np.sum(Y * np.log(AL) + (1 - Y) * np.log(1 - AL), axis=1, keepdims=True))
 
     cost = np.squeeze(cost)  # To make sure your cost's shape is what we expect (e.g. this turns [[17]] into 17).
-    # assert (cost.shape == ())
-
     return cost
 
 
@@ -197,15 +191,8 @@ def compute_cost_with_regulirazation(AL, Y, parameters, lambd):
     sum_of_W = 0
     for numb in range(len(parameters)):
         sum_of_W = sum_of_W + np.sum(np.square(parameters[numb][0][1]))
-
-    # W1 = parameters["W1"]
-    # W2 = parameters["W2"]
-    # W3 = parameters["W3"]
     cross_entropy_cost = compute_cost(AL, Y)
-
-    # L2_regularization_cost = lambd * (np.sum(np.square(W1)) + np.sum(np.square(W2)) + np.sum(np.square(W3))) / (2 * m)
     L2_regularization_cost = lambd * (sum_of_W) / (2 * m)
-
     cost = cross_entropy_cost + L2_regularization_cost
     return cost
 
@@ -294,6 +281,18 @@ def initialize_velocity(parameters):
     return v
 
 
+def initialize_adam(parameters):
+    L = len(parameters) // 2
+    v = {}
+    s = {}
+    for l in range(L):
+        v["dW" + str(l + 1)] = np.zeros((len(parameters["W" + str(l + 1)]), len(parameters["W" + str(l + 1)][0])))
+        v["db" + str(l + 1)] = np.zeros((len(parameters["b" + str(l + 1)]), 1))
+        s["dW" + str(l + 1)] = np.zeros((len(parameters["W" + str(l + 1)]), len(parameters["W" + str(l + 1)][0])))
+        s["db" + str(l + 1)] = np.zeros((len(parameters["b" + str(l + 1)]), 1))
+    return v, s
+
+
 def update_parameters(parameters, grads, learning_rate):
     L = len(parameters) // 2
     for l in range(L):
@@ -301,6 +300,49 @@ def update_parameters(parameters, grads, learning_rate):
         parameters["b" + str(l + 1)] = parameters["b" + str(l + 1)] - learning_rate * grads["db" + str(l + 1)]
 
     return parameters
+
+
+def update_parameters_with_momentum(parameters, grads, v, beta, learning_rate):
+    L = len(parameters) // 2
+    for l in range(L):
+        v["dW" + str(l + 1)] = beta * v["dW" + str(l + 1)] + (1 - beta) * grads['dW' + str(l + 1)]
+        v["db" + str(l + 1)] = beta * v["db" + str(l + 1)] + (1 - beta) * grads['db' + str(l + 1)]
+
+        parameters["W" + str(l + 1)] = parameters["W" + str(l + 1)] - learning_rate * v["dW" + str(l + 1)]
+        parameters["b" + str(l + 1)] = parameters["b" + str(l + 1)] - learning_rate * v["db" + str(l + 1)]
+
+    return parameters, v
+
+
+def update_parameters_with_adam(parameters, grads, v, s, t, learning_rate = 0.01,
+                                beta1 = 0.9, beta2=0.999, epsilon = 1e-8):
+    L = len(parameters) // 2
+    v_corrected = {} # bias corrected v
+    s_corrected = {} # bias corrected s
+    for l in range(L):
+        # Momentum
+        v["dW" + str(l + 1)] = beta1 * v["dW" + str(l + 1)] + (1 - beta1) * grads['dW' + str(l + 1)]
+        v["db" + str(l + 1)] = beta1 * v["db" + str(l + 1)] + (1 - beta1) * grads['db' + str(l + 1)]
+
+        # bias-corrected first moment estimate
+        v_corrected["dW" + str(l + 1)] = v["dW" + str(l + 1)] / (1 - np.power(beta1, t))
+        v_corrected["db" + str(l + 1)] = v["db" + str(l + 1)] / (1 - np.power(beta1, t))
+
+        # Moving average of the squared gradients
+        s["dW" + str(l + 1)] = beta2 * s["dW" + str(l + 1)] + (1 - beta2) * np.power(grads['dW' + str(l + 1)], 2)
+        s["db" + str(l + 1)] = beta2 * s["db" + str(l + 1)] + (1 - beta2) * np.power(grads['db' + str(l + 1)], 2)
+
+        # Compute bias-corrected second raw moment estimate
+        s_corrected["dW" + str(l + 1)] = s["dW" + str(l + 1)] / (1 - np.power(beta2, t))
+        s_corrected["db" + str(l + 1)] = s["db" + str(l + 1)] / (1 - np.power(beta2, t))
+
+        # Update parameters.
+        parameters["W" + str(l + 1)] = parameters["W" + str(l + 1)] - learning_rate * v_corrected[
+            "dW" + str(l + 1)] / np.sqrt(s_corrected["dW" + str(l + 1)] + epsilon)
+        parameters["b" + str(l + 1)] = parameters["b" + str(l + 1)] - learning_rate * v_corrected[
+            "db" + str(l + 1)] / np.sqrt(s_corrected["db" + str(l + 1)] + epsilon)
+
+    return parameters, v, s
 
 
 def predict(X, y, parameters):

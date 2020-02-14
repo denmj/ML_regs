@@ -1,5 +1,5 @@
 from NN.utils import initialize_parameters_deep, L_model_forward, L_model_backward, update_parameters, load_data, \
-    compute_cost_with_regulirazation
+    compute_cost_with_regulirazation, initialize_adam, initialize_velocity, random_mini_batches
 from helper_funcs import *
 import scipy.io as sio
 from utils import *
@@ -7,10 +7,11 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
 
 import math
+import time
 
 
 # Digits
-dataset = sio.loadmat('C:/Users/denis/Desktop/ML/ML_regs/log_reg/ex3data1.mat', squeeze_me=True)
+dataset = sio.loadmat('C:/Users/u325539/Desktop/ML/proj/ML_regs/log_reg/ex3data1.mat', squeeze_me=True)
 
 # weights = sio.loadmat('log_reg/ex3weights.mat', squeeze_me=True)
 
@@ -44,36 +45,61 @@ print ("train_x_dig's shape: " + str(x_train_dig.shape))
 print ("test_x_dig's shape: " + str(y_train_dig.shape))
 
 
-def L_layer_model(X, Y, layers_dims, learning_rate=0.0075, num_iterations=3000, print_cost=False, lambd=0):
+def L_layer_model(X, Y, layers_dims, learning_rate=0.0075, num_iterations=3000,
+                  print_cost=False, lambd=0, mini_batch_size=64, beta = 0.9,
+                  beta1=0.9, beta2=0.999, epsilon=1e-8, optimizer="gd"):
 
     np.random.seed(1)
     costs = []  # keep track of cost
+    seed = 10
+    m = X.shape[1]
 
     # Parameter initialization
     parameters = initialize_parameters_deep(layers_dims)
 
+    # Optimizer
+    if optimizer == "gd":
+        pass
+    if optimizer == "momentum":
+        v = initialize_velocity(parameters)
+    elif optimizer == "adam":
+        v, s = initialize_adam(parameters)
+
     # Gradient Descent
     for i in range(0, num_iterations):
-        # Forward propagation
-        AL, caches = L_model_forward(X, parameters)
 
-        # Cost
-        if lambd == 0:
-            cost = compute_cost(AL, Y)
-        else:
-            cost = compute_cost_with_regulirazation(AL, Y, caches, lambd)
+        # Mini_batch loop
+        seed = seed+1
+        minibatches = random_mini_batches(X, Y, mini_batch_size, seed)
+        cost_total = 0
 
-        # Back propagation
-        grads = L_model_backward(AL, Y, caches, lambd)
+        for minibatch in minibatches:
 
-        # Update grads
-        parameters = update_parameters(parameters, grads, learning_rate)
+            # mini-batch
+            (minibatch_X, minibatch_Y) = minibatch
+
+            # Forward propagation
+            AL, caches = L_model_forward(minibatch_X, parameters)
+
+            # Cost
+            if lambd == 0:
+                cost_total += compute_cost(AL, minibatch_Y)
+            else:
+                cost_total = compute_cost_with_regulirazation(AL, minibatch_Y, caches, lambd)
+
+            # Back propagation
+            grads = L_model_backward(AL, minibatch_Y, caches, lambd)
+
+            # Update grads
+            parameters = update_parameters(parameters, grads, learning_rate)
+
+        cost_avg = cost_total / m
 
         # Print the cost
         if print_cost and i % 100 == 0:
-            print ("Cost after iteration %i: %f" %(i, cost))
+            print ("Cost after iteration %i: %f" %(i, cost_avg))
         if print_cost and i % 100 == 0:
-            costs.append(cost)
+            costs.append(cost_avg)
 
     # Plot the cost
     plt.plot(np.squeeze(costs))
@@ -84,22 +110,10 @@ def L_layer_model(X, Y, layers_dims, learning_rate=0.0075, num_iterations=3000, 
 
     return parameters
 
-#
-# par = initialize_parameters_deep(layers_dims)
-# AL, caches = L_model_forward(train_x, par)
-# print(len(caches))
-#
-# print(train_x.shape)
-# for i in par:
-#     print(i, par[i].shape)
-#
-# sum_of_W = 0
-# for numb in range(len(caches)):
-#     print(caches[numb][0][1].shape)
-#     print(np.sum(np.square(caches[numb][0][1])))
-#     sum_of_W = sum_of_W + np.sum(np.square(caches[numb][0][1]))
-# print(sum_of_W)
 
-# parameters = L_layer_model(train_x, train_y, layers_dims, num_iterations = 2500, print_cost = True, lambd=0.1)
+start = time.clock()
+parameters = L_layer_model(train_x, train_y, layers_dims, num_iterations = 2500, print_cost = True, lambd=0.001)
 # parameters_2 = L_layer_model(x_train_dig, y_train_dig, layers_dims_dig, num_iterations = 2500, print_cost = True, lambd=0.1)
 
+end = time.clock()
+print("Elapsed time: ", end-start)
