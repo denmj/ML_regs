@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import h5py
+import math
 
 
 #
@@ -28,7 +29,6 @@ def show_images(X_data, cols, rows, cmap=None):
 
 
 def sigmoid(Z):
-
     A = 1 / (1 + np.exp(-Z))
     cache = Z
     return A, cache
@@ -59,11 +59,11 @@ def sigmoid_backward(dA, cache):
 
 
 def load_data():
-    train_dataset = h5py.File('C:/Users/u325539/Desktop/ML/proj/ML_regs/NN/train_catvnoncat.h5', "r")
+    train_dataset = h5py.File('C:/Users/denis/Desktop/ML/ML_regs/NN/train_catvnoncat.h5', "r")
     train_set_x_orig = np.array(train_dataset["train_set_x"][:])  # your train set features
     train_set_y_orig = np.array(train_dataset["train_set_y"][:])  # your train set labels
 
-    test_dataset = h5py.File('C:/Users/u325539/Desktop/ML/proj/ML_regs/NN/test_catvnoncat.h5', "r")
+    test_dataset = h5py.File('C:/Users/denis/Desktop/ML/ML_regs/NN/test_catvnoncat.h5', "r")
     test_set_x_orig = np.array(test_dataset["test_set_x"][:])  # your test set features
     test_set_y_orig = np.array(test_dataset["test_set_y"][:])  # your test set labels
 
@@ -95,7 +95,6 @@ def initialize_parameters(n_x, n_h, n_y):
 
 
 def initialize_parameters_deep(layer_dims, method="he"):
-
     np.random.seed(1)
     parameters = {}
     L = len(layer_dims)
@@ -117,6 +116,31 @@ def initialize_parameters_deep(layer_dims, method="he"):
     return parameters
 
 
+def random_mini_batches(X, Y, mini_batch_size=64, seed=0):
+    np.random.seed(seed)
+    m = X.shape[1]
+    mini_batches = []
+
+    # Shuffle X Y
+    permutation = list(np.random.permutation(m))
+    X_shuffled = X[:, permutation]
+    Y_shuffled = Y[:, permutation].reshape((1, m))
+
+    num_complete_minibatches = math.floor(m/mini_batch_size)
+
+    for b in range(0, num_complete_minibatches):
+        mini_batch_X = X_shuffled[:, b*mini_batch_size:(b+1)*mini_batch_size]
+        mini_batch_Y = Y_shuffled[:, b*mini_batch_size:(b+1)*mini_batch_size]
+
+    if m % mini_batch_size != 0:
+        mini_batch_X = X_shuffled[:, num_complete_minibatches * mini_batch_size:]
+        mini_batch_Y = Y_shuffled[:, num_complete_minibatches * mini_batch_size:]
+        mini_batch = (mini_batch_X, mini_batch_Y)
+        mini_batches.append(mini_batch)
+
+    return mini_batches
+
+
 def linear_forward(A, W, b):
     Z = W.dot(A) + b
     assert (Z.shape == (W.shape[0], A.shape[1]))
@@ -125,7 +149,6 @@ def linear_forward(A, W, b):
 
 
 def linear_activation_forward(A_prev, W, b, activation):
-
     if activation == "sigmoid":
         # Inputs: "A_prev, W, b". Outputs: "A, activation_cache".
         Z, linear_cache = linear_forward(A_prev, W, b)
@@ -142,7 +165,6 @@ def linear_activation_forward(A_prev, W, b, activation):
 
 
 def L_model_forward(X, parameters):
-
     caches = []
     A = X
     L = len(parameters) // 2  # number of layers in the neural network
@@ -263,8 +285,16 @@ def L_model_backward(AL, Y, caches, lambd):
     return grads
 
 
-def update_parameters(parameters, grads, learning_rate):
+def initialize_velocity(parameters):
+    L = len(parameters) // 2
+    v = {}
+    for l in range(L):
+        v["dW" + str(l + 1)] = np.zeros((len(parameters["W" + str(l + 1)]), len(parameters["W" + str(l + 1)][0])))
+        v["db" + str(l + 1)] = np.zeros((len(parameters["b" + str(l + 1)]), 1))
+    return v
 
+
+def update_parameters(parameters, grads, learning_rate):
     L = len(parameters) // 2
     for l in range(L):
         parameters["W" + str(l + 1)] = parameters["W" + str(l + 1)] - learning_rate * grads["dW" + str(l + 1)]

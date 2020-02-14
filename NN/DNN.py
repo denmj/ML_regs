@@ -6,9 +6,11 @@ from utils import *
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
 
+import math
+
 
 # Digits
-dataset = sio.loadmat('C:/Users/u325539/Desktop/ML/proj/ML_regs/log_reg/ex3data1.mat', squeeze_me=True)
+dataset = sio.loadmat('C:/Users/denis/Desktop/ML/ML_regs/log_reg/ex3data1.mat', squeeze_me=True)
 
 # weights = sio.loadmat('log_reg/ex3weights.mat', squeeze_me=True)
 
@@ -35,18 +37,22 @@ print ("test_x's shape: " + str(test_x.shape))
 print ("train_y's shape: " + str(train_y.shape))
 print ("test_y's shape: " + str(test_y.shape))
 
-layers_dims = [12288, 20, 7, 5, 1]  #4-layer model
+layers_dims = [12288, 20, 7, 5, 1]  # 4-layer model
 layers_dims_dig = [400, 64, 32, 32, 10]
 
 print ("train_x_dig's shape: " + str(x_train_dig.shape))
 print ("test_x_dig's shape: " + str(y_train_dig.shape))
 
 
-def L_layer_model(X, Y, layers_dims, learning_rate=0.0075, num_iterations=3000, print_cost=False, lambd = 0):
+def L_layer_model(X, Y, layers_dims, learning_rate=0.0075, num_iterations=3000, print_cost=False, lambd=0):
 
     np.random.seed(1)
     costs = []  # keep track of cost
+
+    # Parameter initialization
     parameters = initialize_parameters_deep(layers_dims)
+
+    # Gradient Descent
     for i in range(0, num_iterations):
         # Forward propagation
         AL, caches = L_model_forward(X, parameters)
@@ -94,6 +100,6 @@ def L_layer_model(X, Y, layers_dims, learning_rate=0.0075, num_iterations=3000, 
 #     sum_of_W = sum_of_W + np.sum(np.square(caches[numb][0][1]))
 # print(sum_of_W)
 
-parameters = L_layer_model(train_x, train_y, layers_dims, num_iterations = 2500, print_cost = True, lambd=0.1)
+# parameters = L_layer_model(train_x, train_y, layers_dims, num_iterations = 2500, print_cost = True, lambd=0.1)
 # parameters_2 = L_layer_model(x_train_dig, y_train_dig, layers_dims_dig, num_iterations = 2500, print_cost = True, lambd=0.1)
 
