@@ -1,5 +1,6 @@
 from NN.utils import initialize_parameters_deep, L_model_forward, L_model_backward, update_parameters, load_data, \
-    compute_cost_with_regulirazation, initialize_adam, initialize_velocity, random_mini_batches
+    compute_cost_with_regulirazation, initialize_adam, initialize_velocity, random_mini_batches,\
+    update_parameters_with_momentum, update_parameters_with_adam
 from helper_funcs import *
 import scipy.io as sio
 from utils import *
@@ -91,7 +92,13 @@ def L_layer_model(X, Y, layers_dims, learning_rate=0.0075, num_iterations=3000,
             grads = L_model_backward(AL, minibatch_Y, caches, lambd)
 
             # Update grads
-            parameters = update_parameters(parameters, grads, learning_rate)
+            if optimizer == "gd":
+                parameters = update_parameters(parameters, grads, learning_rate)
+            elif optimizer == "momentum":
+                parameters = update_parameters_with_momentum(parameters, grads, v, beta, learning_rate)
+            elif optimizer == "adam":
+                t = t + 1
+                parameters = update_parameters_with_adam(parameters, grads, v, s, t, learning_rate, beta1, beta2, epsilon)
 
         cost_avg = cost_total / m
 
