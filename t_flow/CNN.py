@@ -20,5 +20,5 @@ X, Y = tf_utils.create_placeholders(64,64,3,6)
 params = tf_utils.initialize_parameters()
 
 print(params)
-
-_, _, parameters = tf_utils.model(X_train, Y_train, X_test, Y_test)
+#
+# _, _, parameters = tf_utils.model(X_train, Y_train, X_test, Y_test)
