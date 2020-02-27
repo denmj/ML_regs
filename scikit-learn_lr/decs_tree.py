@@ -1,14 +1,19 @@
 from sklearn.datasets import load_iris
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import plot_tree
+import matplotlib.pyplot as plt
+
 
 
 iris = load_iris()
+X_set, y_set = load_iris(return_X_y=True)
+
 X = iris.data[:, 2:]
 y = iris.target
 
-tree_clf = DecisionTreeClassifier(max_depth=2)
-tree_clf.fit(X, y)
 
-print(tree_clf.predict_proba([[5, 1.5]]))
+clf = DecisionTreeClassifier(random_state=1)
+clf = clf.fit(X_set, y_set)
 
-
+plot_tree(clf)
+plt.show()

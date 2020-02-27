@@ -1,3 +1,13 @@
+import numpy as np
+from scipy.stats import entropy
+
+
+
+"""
+Fibonacci
+
+"""
+
 def fib (n):
     if n == 1:
         return  0
@@ -6,8 +16,6 @@ def fib (n):
 
     else:
         return fib(n-1) + fib(n-2)
-
-print(fib(9))
 
 """
     Task 
@@ -19,8 +27,6 @@ print(fib(9))
 """
 
 orig_dict =  {'Input.txt': 'Randy', 'Code.py': 'Stan', 'Output.txt': 'Randy'}
-
-print(orig_dict.values())
 
 def t_fucn(dict):
     s = set(val for val in dict.values())
@@ -35,27 +41,31 @@ def t_fucn(dict):
         t.update({uniq_name: value_list})
     return t
 
-
-modif_dict = t_fucn(orig_dict)
-print(modif_dict)
-
-
 """
 
 ["vanilla", "chocolate"], ["chocolate sauce"]
 return combination of topping and base
 
 """
-l1 = ["vanilla", "chocolate"]
-l2 = ["chocolate sauce"]
-comb_list = []
-for e1 in l1:
-    for e2 in l2:
-        comb_list.append([e1, e2])
-
-print(comb_list)
+list_1 = ["vanilla", "chocolate"]
+list_2 = ["chocolate sauce"]
 
 
+def icec(l1, l2):
+    comb_list = []
+    for e1 in l1:
+        for e2 in l2:
+            comb_list.append([e1, e2])
 
-def comb_list (list1, list2):
+    print(comb_list)
+
+
+
+"""
+Entropy
+"""
+
+value, counts = np.unique()
+
+def ent(data):
     pass
