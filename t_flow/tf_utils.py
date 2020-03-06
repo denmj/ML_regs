@@ -2,6 +2,7 @@ import h5py
 import numpy as np
 import math
 import tensorflow as tf
+
 import matplotlib.pyplot as plt
 from tensorflow.python.framework import ops
 
@@ -54,11 +55,11 @@ def zero_pad(X, pad):
 
 
 def load_dataset():
-    train_dataset = h5py.File('train_signs.h5', "r")
+    train_dataset = h5py.File('C:/Users/denis/Desktop/ML/ML_regs/t_flow/train_signs.h5', "r")
     train_set_x_orig = np.array(train_dataset["train_set_x"][:])
     train_set_y_orig = np.array(train_dataset["train_set_y"][:])
 
-    test_dataset = h5py.File('test_signs.h5', "r")
+    test_dataset = h5py.File('C:/Users/denis/Desktop/ML/ML_regs/t_flow/test_signs.h5', "r")
     test_set_x_orig = np.array(test_dataset["test_set_x"][:])
     test_set_y_orig = np.array(test_dataset["test_set_y"][:])
 

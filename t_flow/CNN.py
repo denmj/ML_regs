@@ -4,6 +4,8 @@ import numpy as np
 from t_flow import tf_utils
 import tensorflow as tf
 
+print(tf.__version__)
+
 X_train_orig, Y_train_orig, X_test_orig, Y_test_orig, classes = tf_utils.load_dataset()
 
 print(X_train_orig.shape, Y_train_orig.shape, X_test_orig.shape, Y_test_orig.shape, classes)
@@ -21,4 +23,4 @@ params = tf_utils.initialize_parameters()
 
 print(params)
 #
-# _, _, parameters = tf_utils.model(X_train, Y_train, X_test, Y_test)
+_, _, parameters = tf_utils.model(X_train, Y_train, X_test, Y_test)
