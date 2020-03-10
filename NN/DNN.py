@@ -118,7 +118,7 @@ def L_layer_model(X, Y, layers_dims, learning_rate=0.0075, num_iterations=3000,
 
 
 start = time.clock()
-parameters = L_layer_model(x_train_dig, y_train_dig, layers_dims_dig, num_iterations = 2500, print_cost = True, lambd=0,  optimizer="momentum")
+# parameters = L_layer_model(x_train_dig, y_train_dig, layers_dims_dig, num_iterations = 2500, print_cost = True, lambd=0,  optimizer="momentum")
 # parameters_2 = L_layer_model(x_train_dig, y_train_dig, layers_dims_dig, num_iterations = 2500, print_cost = True, lambd=0.1)
 
 end = time.clock()
