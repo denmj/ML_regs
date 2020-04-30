@@ -2,7 +2,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-from helper_funcs import *
 
 #pre precessing
 from sklearn import preprocessing as prep
@@ -29,7 +28,9 @@ def h(x, theta):
 dataset = df.to_numpy()
 
 X = dataset[:, :1]
+print(X.shape)
 X_b = np.c_[np.ones([len(X), 1]), X]
+print(X_b.shape)
 X_b_n = np.c_[np.ones([len(X), 1]), normalize(X)]
 y = dataset[:, 1:2]
 t = np.zeros([2, 1])
