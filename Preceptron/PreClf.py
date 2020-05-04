@@ -1,35 +1,43 @@
 import numpy as np
 
-from sklearn import datasets
-from sklearn.model_selection import train_test_split
-
-
-X, y = datasets.make_regression(n_samples=10, n_features=2, noise=10, random_state=40)
-x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=31)
-y = y.reshape(10, 1)
-w = np.zeros([x_train.shape[1], 1])
-
-def sign_func(z):
-    if z > 0:
-        return 1
-    else:
-        return -1
-
-for i, x in enumerate(x_train):
-    print(sign_func(np.dot(x, w)))
-
 
 class PreceptClf:
     def __init__(self, alpha=0.01, n_iterations=1000):
         self.alpha = alpha
         self.n_iterations = n_iterations
+        self.cost_history = []
+
         self.weights = None
         self.bias = None
+        self.activation_func = self.sign_func
 
     def fit(self, X, y):
         n_samples, n_features = X.shape
-        self.weights = np.zeros([n_features, 1])
-        self.bias = np.ones([n_samples, 1])
+        self.weights = np.zeros(n_features)
+        self.bias = 0
 
-    def predict(self):
-        pass
+        y_cond = np.array([1 if i > 0 else 0 for i in y])
+
+        for _ in range(self.n_iterations):
+            cost_sum = 0.0
+            for idx, x_i in enumerate(X):
+                linear_output = np.dot(x_i, self.weights) + self.bias
+                y_predicted = self.activation_func(linear_output)
+
+                # Update
+                update = self.alpha * (y_cond[idx] - y_predicted)
+                cost = (y_cond[idx] - y_predicted) ** 2
+
+                cost_sum += cost
+                self.weights += update * x_i
+                self.bias += update
+            self.cost_history.append(cost_sum)
+
+
+    def predict(self, X):
+        linear_output = np.dot(X, self.weights) + self.bias
+        y_predicted = self.activation_func(linear_output)
+        return y_predicted
+
+    def sign_func(self, X):
+        return np.where(X >= 0, 1, 0)
