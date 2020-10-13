@@ -3,10 +3,9 @@ import numpy as np
 
 class KNearestNeighbors:
 
-    def __init__(self):
-        pass
+    def __init__(self, X, y):
 
-    def train(self, X, y):
+        # Remember all data (training)
         self.X_train = X
         self.y_train = y
 
@@ -47,7 +46,6 @@ class KNearestNeighbors:
             y_pred[i] = vals_cnt_sorted[0][0]
 
         return y_pred
-
 
 
 X = np.random.rand(10, 3)
