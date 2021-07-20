@@ -30,7 +30,7 @@ class KNearestNeighbors:
         distances = np.zeros((X.shape[0], self.X_train.shape[0]))
         for i in range(X.shape[0]):
             for j in range(self.X_train.shape[0]):
-                distances[i, j] = np.sqrt(np.sum((X[i] - self.X_train[j]) ** 2))
+                distances[i, j] = np.sqrt(np.sum((self.X_train[j] - X[i]) ** 2))
         return distances
 
     def predict_labels(self, distances, k=1):
