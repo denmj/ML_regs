@@ -4,9 +4,23 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-
+import os
 from tensorflow.keras.preprocessing import image_dataset_from_directory
 
+def set_seed(seed=31415):
+    np.random.seed(seed)
+    tf.random.set_seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    os.environ['TF_DETERMINISTIC_OPS'] = '1'
+set_seed(31415)
+
+
+
+
+
+# isolates GPU.0
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 # Imports
 import os, warnings
 import matplotlib.pyplot as plt
@@ -18,7 +32,6 @@ def set_seed(seed=31415):
     tf.random.set_seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)
     os.environ['TF_DETERMINISTIC_OPS'] = '1'
-
 set_seed(31415)
 
 
@@ -55,12 +68,11 @@ def convert_to_float(image, label):
     image = tf.image.convert_image_dtype(image, dtype=tf.float32)
     return image, label
 
+
 AUTOTUNE = tf.data.experimental.AUTOTUNE
+
 ds_train = (
-    ds_train_
-    .map(convert_to_float)
-    .cache()
-    .prefetch(buffer_size=AUTOTUNE)
+    ds_train_.map(convert_to_float).cache().prefetch(buffer_size=AUTOTUNE)
 )
 ds_valid = (
     ds_valid_
@@ -70,12 +82,21 @@ ds_valid = (
 )
 
 
+# pretrain_base = tf.keras.applications.VGG16(
+#     include_top=False,
+#     weights="imagenet",
+#     input_tensor=None,
+#     input_shape=(128, 128, 3),
+#     pooling=None
+# )
+
 pretrained_base = tf.keras.models.load_model(
-    'D://models//vgg16-pretrained-base',
+    'D://models//inceptionv1'
 )
 
-pretrained_base.trainable = False
 
+print("Model loaded")
+pretrained_base.trainable = False
 
 
 model = keras.Sequential([
@@ -86,6 +107,7 @@ model = keras.Sequential([
 ])
 
 
+print("Model built")
 
 model.compile(
     optimizer='adam',
@@ -93,14 +115,17 @@ model.compile(
     metrics=['binary_accuracy'],
 )
 
+print("Model compilted")
+
+
+
 history = model.fit(
     ds_train,
     validation_data=ds_valid,
-    epochs=30,
-    verbose=0,
+    epochs=2,
 )
 
-
+print("Model trained")
 
 history_frame = pd.DataFrame(history.history)
 history_frame.loc[:, ['loss', 'val_loss']].plot()
