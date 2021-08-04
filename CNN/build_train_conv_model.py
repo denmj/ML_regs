@@ -1,7 +1,8 @@
 import tensorflow as tf
-from keras.models import Sequential
-import keras
-from keras import layers
+from tensorflow import keras
+from tensorflow.keras import layers
+from tensorflow.keras.models import Sequential
+
 from t_flow.tf_utils import *
 import os
 
@@ -19,6 +20,7 @@ def create_model():
                   loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                   metrics=['sparse_categorical_accuracy'])
     return model
+
 
 
 if __name__ == '__main__':

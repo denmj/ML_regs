@@ -1,4 +1,5 @@
 
+import pandas as pd
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
@@ -67,3 +68,40 @@ ds_valid = (
     .cache()
     .prefetch(buffer_size=AUTOTUNE)
 )
+
+
+pretrained_base = tf.keras.models.load_model(
+    'D://models//vgg16-pretrained-base',
+)
+
+pretrained_base.trainable = False
+
+
+
+model = keras.Sequential([
+    pretrained_base,
+    layers.Flatten(),
+    layers.Dense(6, activation='relu'),
+    layers.Dense(1, activation='sigmoid'),
+])
+
+
+
+model.compile(
+    optimizer='adam',
+    loss='binary_crossentropy',
+    metrics=['binary_accuracy'],
+)
+
+history = model.fit(
+    ds_train,
+    validation_data=ds_valid,
+    epochs=30,
+    verbose=0,
+)
+
+
+
+history_frame = pd.DataFrame(history.history)
+history_frame.loc[:, ['loss', 'val_loss']].plot()
+history_frame.loc[:, ['binary_accuracy', 'val_binary_accuracy']].plot();
