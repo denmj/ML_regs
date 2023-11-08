@@ -6,7 +6,7 @@ from scipy.special import softmax as sf
 # Test comment
 # another commment
 # Activation functions e ct
-#
+# 3rd comment
 
 def linear_func(A, W, b):
     Z = np.dot(W, A) + b
