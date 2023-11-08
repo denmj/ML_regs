@@ -3,7 +3,8 @@ from sklearn.preprocessing import OneHotEncoder
 from scipy.special import softmax as sf
 
 
-#
+# Test comment
+# another commment
 # Activation functions e ct
 #
 
