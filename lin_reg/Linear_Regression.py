@@ -69,3 +69,11 @@ def lu_decomposition(X: np.ndarray, Y: np.ndarray) -> np.ndarray:
     print(1)
     return theta
 
+# Method 3: QR Decomposition 
+def qr_decomposition(X: np.ndarray, Y: np.ndarray) -> np.ndarray:
+    """
+    Return the solution to the linear regression problem using QR decomposition
+    """
+    Q, R = np.linalg.qr(X)
+    return np.linalg.inv(R).dot(Q.T).dot(Y)
+
