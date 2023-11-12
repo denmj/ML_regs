@@ -1,7 +1,10 @@
-numpy == 1.22.0
-pandas ==  0.24.2
-seaborn == 0.9.0
-matplotlib == 3.1.0
-scipy == 1.10.0
-Pillow ==  6.1.0
-scikit-learn == 0.21.3
+numpy
+pandas
+seaborn
+matplotlib
+scipy
+Pillow
+scikit-learn
+
+# Notebook
+ipykernel
