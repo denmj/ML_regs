@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.linalg as la
 
 from typing import List
 
@@ -34,8 +35,11 @@ def lu_decomposition(X: np.ndarray, Y: np.ndarray) -> np.ndarray:
     A needs to be a square matrix 
     """
     A = X.T.dot(X)
+    print(f'A shape: {A.shape}')
     b = X.T.dot(Y)
+    print(f'b shape: {b.shape}')
     theta = np.zeros_like(X.shape[1])
+    print(f'theta shape: {theta.shape}')
 
     n = A.shape[0]
     y = np.zeros(n)
@@ -69,6 +73,17 @@ def lu_decomposition(X: np.ndarray, Y: np.ndarray) -> np.ndarray:
     print(1)
     return theta
 
+def lu_decomposition_simple(X: np.ndarray, Y: np.ndarray) -> np.ndarray:
+
+    """Use scipy """
+    A = X.T.dot(X)
+    b = X.T.dot(Y)
+    theta = np.zeros_like(X.shape[1])
+    P, L, U = la.lu(A)
+    y = la.solve_triangular(L, b, lower=True)
+    theta = la.solve_triangular(U, y)
+    return theta
+
 # Method 3: QR Decomposition 
 def qr_decomposition(X: np.ndarray, Y: np.ndarray) -> np.ndarray:
     """
@@ -76,4 +91,22 @@ def qr_decomposition(X: np.ndarray, Y: np.ndarray) -> np.ndarray:
     """
     Q, R = np.linalg.qr(X)
     return np.linalg.inv(R).dot(Q.T).dot(Y)
+
+
+# Method 4: SVD Decomposition
+def svd_decomposition(X: np.ndarray, Y: np.ndarray) -> np.ndarray:
+    """
+    Return the solution to the linear regression problem using SVD decomposition
+    """
+    U, S, V = np.linalg.svd(X)
+    return V.T.dot(np.linalg.inv(np.diag(S))).dot(U.T).dot(Y)
+
+
+# Method 5: Cholesky Decomposition
+def cholesky_decomposition(X: np.ndarray, Y: np.ndarray) -> np.ndarray:
+    """
+    Return the solution to the linear regression problem using Cholesky decomposition
+    """
+    L = np.linalg.cholesky(X.T.dot(X))
+    return np.linalg.inv(L.T).dot(np.linalg.inv(L)).dot(X.T).dot(Y)
 
