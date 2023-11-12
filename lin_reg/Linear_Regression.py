@@ -110,3 +110,18 @@ def cholesky_decomposition(X: np.ndarray, Y: np.ndarray) -> np.ndarray:
     L = np.linalg.cholesky(X.T.dot(X))
     return np.linalg.inv(L.T).dot(np.linalg.inv(L)).dot(X.T).dot(Y)
 
+
+# Method 6: Gradient Descent
+def gradient_descent(X: np.ndarray, Y: np.ndarray, alpha: float, num_iter: int) -> np.ndarray:
+    """
+    Return the solution to the linear regression problem using gradient descent
+    """
+    m = X.shape[0]
+
+    theta = np.zeros((X.shape[1], 1))
+    
+    for _ in range(num_iter):
+        residual = X.dot(theta) - Y
+        grad = (1/ m)  * X.T.dot(residual)
+        theta = theta - alpha * grad
+    return theta
