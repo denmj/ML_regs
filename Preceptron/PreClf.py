@@ -62,22 +62,25 @@ class SingleLayerPreceptronClassifier:
         n_samples, n_features = X.shape
         self.weights = np.zeros(n_features)
         self.bias = 0
-        
-        y_cond = np.array([1 if i > 0 else 0 for i in y])
 
+        
         for _ in range(self.n_iterations):
             cost_sum = 0.0
-            for idx, x_i in enumerate(X):
+            for x_i, target in zip(X, y):
+
+                # Linear output of single neuron
                 linear_output = np.dot(x_i, self.weights) + self.bias
+
+                # Predicted output of single neuron
                 y_predicted = self.activation_func(linear_output)
 
                 # Update
-                update = self.alpha * (y_cond[idx] - y_predicted)
-                cost = (y_cond[idx] - y_predicted) ** 2
-
-                cost_sum += cost
+                update = self.alpha * (target - y_predicted)
                 self.weights += update * x_i
                 self.bias += update
+
+                cost = (target - y_predicted) ** 2
+                cost_sum += cost
             self.cost_history.append(cost_sum)
 
 
