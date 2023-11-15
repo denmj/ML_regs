@@ -64,8 +64,22 @@ class MultilayerPerceptron(object):
     
     # feed forward
     def forward_propagation(self, X):
-        pass
+        activations = [X]
 
+        for i in range(len(self.weights) - 1):
+            print(f'Layer: {i}, x: {activations[i].shape}, w: {self.weights[i].shape}, b: {self.bias[i].shape}')
+            linear_output = np.dot(activations[i], self.weights[i]) + self.bias[i]
+            print(f'Linear part output shape: {linear_output.shape}')
+            activation_output = self.relu(linear_output)
+            print(f'Activation part output shape: {activation_output.shape}')
+            activations.append(activation_output)
+        
+        # output layer
+        last_linear_output = np.dot(activations[-1], self.weights[-1]) + self.bias[-1]
+        print(f'Last linear part output shape: {last_linear_output.shape}')
+        last_activation_output = self.sigmoid(last_linear_output)
+        print(f'Last activation part output shape: {last_activation_output.shape}')
+        activations.append(last_activation_output)
 
     # activation function - sigmoid 
     def sigmoid(self, z):
