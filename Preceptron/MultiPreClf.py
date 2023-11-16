@@ -81,6 +81,24 @@ class MultilayerPerceptron(object):
         print(f'Last activation part output shape: {last_activation_output.shape}')
         activations.append(last_activation_output)
 
+        return activations
+    
+    # back propagation
+    def back_propagation(self, X, y, activations):
+        # calculate the error of the output layer
+        error = activations[-1] - y
+        # calculate the error of the hidden layers
+        for i in range(len(self.weights)-1, 0, -1):
+            error = np.dot(error, self.weights[i].T) * self.relu_prime(activations[i])
+            self.weights[i] -= self.eta * np.dot(activations[i-1].T, error)
+            self.bias[i] -= self.eta * np.sum(error, axis=0, keepdims=True)
+        
+        # update the weights and bias of the input layer
+        error = np.dot(error, self.weights[1].T) * self.relu_prime(activations[0])
+        self.weights[0] -= self.eta * np.dot(X.T, error)
+        self.bias[0] -= self.eta * np.sum(error, axis=0, keepdims=True)
+
+
     # activation function - sigmoid 
     def sigmoid(self, z):
         return 1.0/(1.0+np.exp(-z))
