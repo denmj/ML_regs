@@ -86,7 +86,7 @@ class MultilayerPerceptron(object):
     # back propagation
     def back_propagation(self, X, y, activations):
         # calculate the error of the output layer
-        error = activations[-1] - y
+        error = (activations[-1] - y) * self.sigmoid_prime(activations[-1])
         # calculate the error of the hidden layers
         for i in range(len(self.weights)-1, 0, -1):
             error = np.dot(error, self.weights[i].T) * self.relu_prime(activations[i])
