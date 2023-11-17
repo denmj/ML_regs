@@ -77,7 +77,13 @@ class MultilayerPerceptron(object):
         # output layer
         last_linear_output = np.dot(activations[-1], self.weights[-1]) + self.bias[-1]
         print(f'Last linear part output shape: {last_linear_output.shape}')
-        last_activation_output = self.sigmoid(last_linear_output)
+
+        # check if case is binary or multi-class classification
+        if self.n_outputs == 1:
+            last_activation_output = self.sigmoid(last_linear_output)
+        else:
+            last_activation_output = self.softmax(last_linear_output)
+
         print(f'Last activation part output shape: {last_activation_output.shape}')
         activations.append(last_activation_output)
 
@@ -86,7 +92,12 @@ class MultilayerPerceptron(object):
     # back propagation
     def back_propagation(self, X, y, activations):
         # calculate the error of the output layer
-        error = (activations[-1] - y) * self.sigmoid_prime(activations[-1])
+
+        # check if case is binary or multi-class classification
+        if self.n_outputs == 1:
+            error = (activations[-1] - y) * self.sigmoid_prime(activations[-1])
+        else:
+            error = (activations[-1] - y) * self.softmax_prime(activations[-1])
         # calculate the error of the hidden layers
         for i in range(len(self.weights)-1, 0, -1):
             error = np.dot(error, self.weights[i].T) * self.relu_prime(activations[i])
@@ -97,6 +108,49 @@ class MultilayerPerceptron(object):
         error = np.dot(error, self.weights[1].T) * self.relu_prime(activations[0])
         self.weights[0] -= self.eta * np.dot(X.T, error)
         self.bias[0] -= self.eta * np.sum(error, axis=0, keepdims=True)
+
+    # training
+    def train(self, X, y, X_val = None, y_val = None):
+        
+        training_loss = []
+        validation_loss = []
+
+        for i in range(self.n_iterations):
+            activations = self.forward_propagation(X)
+            self.back_propagation(X, y, activations)
+
+            # calculate the loss
+            loss = self.calculate_mse_loss(y, activations[-1])
+            
+            # print the loss
+            print(f'Epoch: {i}, Loss: {loss}')
+
+            training_loss.append(loss)
+
+            if X_val is not None and y_val is not None:
+                
+                activations = self.forward_propagation(X_val)
+                
+
+                loss = self.calculate_mse_loss(y_val, activations[-1])
+                print(f'Epoch: {i}, Loss: {loss}')
+                validation_loss.append(loss)
+        
+        return training_loss, validation_loss
+
+
+    # Loss calculation - MSE
+    def calculate_mse_loss(self, y, y_pred):
+        return np.mean((y - y_pred)**2)
+    
+    # Loss calculation - Cross Entropy
+    def cross_entropy_loss(self, y_true, y_pred):
+        # Assuming y_pred is output from sigmoid (binary) or softmax (multi-class)
+        if y_true.shape[1] == 1:  # Binary classification
+            return -np.mean(y_true * np.log(y_pred + 1e-8) + (1 - y_true) * np.log(1 - y_pred + 1e-8))
+        else:  # Multi-class classification
+            return -np.mean(np.sum(y_true * np.log(y_pred + 1e-8), axis=1))
+
 
 
     # activation function - sigmoid 
@@ -114,6 +168,14 @@ class MultilayerPerceptron(object):
     # derivative of relu function
     def relu_prime(self, z):
         return (z > 0).astype(int)
+    
+    # activation function - softmax
+    def softmax(self, z):
+        return np.exp(z) / np.sum(np.exp(z), axis=1, keepdims=True)
+    
+    # derivative of softmax function
+    def softmax_prime(self, z):
+        return self.softmax(z) * (1 - self.softmax(z))
 
 
 
