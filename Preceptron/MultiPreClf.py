@@ -97,7 +97,7 @@ class MultilayerPerceptron(object):
         if self.n_outputs == 1:
             error = (activations[-1] - y) * self.sigmoid_prime(activations[-1])
         else:
-            error = (activations[-1] - y) * self.softmax_prime(activations[-1])
+            error = (activations[-1] - y)
         # calculate the error of the hidden layers
         for i in range(len(self.weights)-1, 0, -1):
             error = np.dot(error, self.weights[i].T) * self.relu_prime(activations[i])
