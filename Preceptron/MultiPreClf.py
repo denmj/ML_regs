@@ -110,31 +110,37 @@ class MultilayerPerceptron(object):
         self.bias[0] -= self.eta * np.sum(error, axis=0, keepdims=True)
 
     # training
-    def train(self, X, y, X_val = None, y_val = None):
+    def train(self, X, y, X_val = None, y_val = None, batch_size = 32):
         
         training_loss = []
         validation_loss = []
 
         for i in range(self.n_iterations):
-            activations = self.forward_propagation(X)
-            self.back_propagation(X, y, activations)
+
+            # mini-batch
+            permutation = np.random.permutation(X.shape[0])
+            X_shuffled = X[permutation]
+            y_shuffled = y[permutation]
+
+            for j in range(0, X.shape[0], batch_size):
+
+                X_batch = X_shuffled[j:j+batch_size]
+                y_batch = y_shuffled[j:j+batch_size]
+
+                activations = self.forward_propagation(X_batch)
+                self.back_propagation(X_batch, y_batch, activations)
 
             # calculate the loss
-            loss = self.calculate_mse_loss(y, activations[-1])
-            
-            # print the loss
-            print(f'Epoch: {i}, Loss: {loss}')
+            loss = self.cross_entropy_loss(y, self.forward_propagation(X)[-1])
 
+            print(f'Epoch: {i}, Loss: {loss}')
             training_loss.append(loss)
 
             if X_val is not None and y_val is not None:
-                
-                activations = self.forward_propagation(X_val)
-                
-
-                loss = self.calculate_mse_loss(y_val, activations[-1])
-                print(f'Epoch: {i}, Loss: {loss}')
-                validation_loss.append(loss)
+      
+                val_loss = self.cross_entropy_loss(y_val, self.forward_propagation(X_val)[-1])
+                print(f'Epoch: {i}, Loss: {val_loss}')
+                validation_loss.append(val_loss)
         
         return training_loss, validation_loss
 
@@ -173,10 +179,6 @@ class MultilayerPerceptron(object):
     def softmax(self, z):
         return np.exp(z) / np.sum(np.exp(z), axis=1, keepdims=True)
     
-    # derivative of softmax function
-    def softmax_prime(self, z):
-        return self.softmax(z) * (1 - self.softmax(z))
-
 
 
     
