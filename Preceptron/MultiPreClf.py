@@ -63,23 +63,21 @@ class MultilayerPerceptron(object):
 
             self.weights.append(np.random.randn(self.layer_sizes[i], self.layer_sizes[i+1]) * he_std_dev)
             self.bias.append(np.zeros((1, self.layer_sizes[i+1])))
-
+        # print shape of weights
+        for i in range(len(self.weights)):
+            print(f'Weights shape: {self.weights[i].shape}')
     
     # feed forward
     def forward_propagation(self, X):
         activations = [X]
 
         for i in range(len(self.weights) - 1):
-            print(f'Layer: {i}, x: {activations[i].shape}, w: {self.weights[i].shape}, b: {self.bias[i].shape}')
             linear_output = np.dot(activations[i], self.weights[i]) + self.bias[i]
-            print(f'Linear part output shape: {linear_output.shape}')
             activation_output = self.relu(linear_output)
-            print(f'Activation part output shape: {activation_output.shape}')
             activations.append(activation_output)
         
         # output layer
         last_linear_output = np.dot(activations[-1], self.weights[-1]) + self.bias[-1]
-        print(f'Last linear part output shape: {last_linear_output.shape}')
 
         # check if case is binary or multi-class classification
         if self.n_outputs == 1:
@@ -87,30 +85,44 @@ class MultilayerPerceptron(object):
         else:
             last_activation_output = self.softmax(last_linear_output)
 
-        print(f'Last activation part output shape: {last_activation_output.shape}')
         activations.append(last_activation_output)
+        # print shape of activations
+        for i in range(len(activations)):
+            print(f'Activations shape: {activations[i].shape}')
 
         return activations
     
     # back propagation
     def back_propagation(self, X, y, activations):
-        # calculate the error of the output layer
-
-        # check if case is binary or multi-class classification
-        if self.n_outputs == 1:
-            error = (activations[-1] - y) * self.sigmoid_prime(activations[-1])
-        else:
-            error = (activations[-1] - y)
-        # calculate the error of the hidden layers
-        for i in range(len(self.weights)-1, 0, -1):
-            error = np.dot(error, self.weights[i].T) * self.relu_prime(activations[i])
-            self.weights[i] -= self.eta * np.dot(activations[i-1].T, error)
-            self.bias[i] -= self.eta * np.sum(error, axis=0, keepdims=True)
         
-        # update the weights and bias of the input layer
-        error = np.dot(error, self.weights[1].T) * self.relu_prime(activations[0])
-        self.weights[0] -= self.eta * np.dot(X.T, error)
-        self.bias[0] -= self.eta * np.sum(error, axis=0, keepdims=True)
+        # initial error 
+        output_error = activations[-1] - y
+
+        #Backward pass 
+        for l in range(1, len(self.weights) + 1):
+            # index from the end of the list
+            i = -l
+
+            # calculate gradients
+            if i == -1:
+                # check if case is binary or multi-class classification
+                if self.n_outputs == 1:
+                    error = output_error * self.sigmoid_prime(activations[i])
+                else:
+                    error = output_error * self.softmax(activations[i])
+            else:
+                error = np.dot(delta, self.weights[i+1].T) * self.relu_prime(activations[i])
+
+            # calculate delta
+            delta = error * self.eta
+
+            # calculate gradients
+            weight_gradients = np.dot(activations[i-1].T, delta)
+            bias_gradients = np.sum(delta, axis=0, keepdims=True)
+
+            # update weights and bias
+            self.weights[i] -= weight_gradients
+            self.bias[i] -= bias_gradients
 
     # training
     def train(self, X, y, X_val = None, y_val = None, batch_size = 32):
@@ -119,7 +131,7 @@ class MultilayerPerceptron(object):
         validation_loss = []
 
         for i in range(self.n_iterations):
-
+            print(f'Iteration: {i}')
             # mini-batch
             permutation = np.random.permutation(X.shape[0])
             X_shuffled = X[permutation]
@@ -131,6 +143,7 @@ class MultilayerPerceptron(object):
                 y_batch = y_shuffled[j:j+batch_size]
 
                 activations = self.forward_propagation(X_batch)
+                print(X_batch.shape, y_batch.shape)
                 self.back_propagation(X_batch, y_batch, activations)
 
             # calculate the loss
