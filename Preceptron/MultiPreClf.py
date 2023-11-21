@@ -58,7 +58,10 @@ class MultilayerPerceptron(object):
         self.layer_sizes = [self.input_layer_size] + self.hidden_layers_size + [self.n_outputs]
 
         for i in range(len(self.layer_sizes)-1):
-            self.weights.append(np.random.randn(self.layer_sizes[i], self.layer_sizes[i+1]))
+            # He initialization
+            he_std_dev = np.sqrt(2 / self.layer_sizes[i])
+
+            self.weights.append(np.random.randn(self.layer_sizes[i], self.layer_sizes[i+1]) * he_std_dev)
             self.bias.append(np.zeros((1, self.layer_sizes[i+1])))
 
     
