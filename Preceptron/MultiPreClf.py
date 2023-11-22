@@ -70,25 +70,30 @@ class MultilayerPerceptron(object):
     # feed forward
     def forward_propagation(self, X):
         activations = [X]
-
+        print(f'A {0} : {activations[0].shape} ')
+        # -1 because the last layer is the output layer
         for i in range(len(self.weights) - 1):
             linear_output = np.dot(activations[i], self.weights[i]) + self.bias[i]
             activation_output = self.relu(linear_output)
+            # print activation[i].shape, weights[i].shape, linear_output.shape
+            print(f'W {i+1} : {self.weights[i].shape} ')
+            print(f'Z {i+1} - Linear output shape: {linear_output.shape}')
+            print(f'A {i+1} - Activation(relu) output shape: {activation_output.shape}')
             activations.append(activation_output)
-        
         # output layer
         last_linear_output = np.dot(activations[-1], self.weights[-1]) + self.bias[-1]
+        print(f'Z {2} - Linear output shape: {activations[-1].shape} ')
+        print(f'W {2} - Weights shape: {self.weights[-1].shape} ')
+        print(f'Z {3} - Linear output shape: {last_linear_output.shape}')
 
         # check if case is binary or multi-class classification
         if self.n_outputs == 1:
             last_activation_output = self.sigmoid(last_linear_output)
         else:
             last_activation_output = self.softmax(last_linear_output)
-
+    
+        print(f'A {3} - Activation (softmax) output shape: {last_activation_output.shape}')
         activations.append(last_activation_output)
-        # print shape of activations
-        for i in range(len(activations)):
-            print(f'Activations shape: {activations[i].shape}')
 
         return activations
     
@@ -96,33 +101,44 @@ class MultilayerPerceptron(object):
     def back_propagation(self, X, y, activations):
         
         # initial error 
-        output_error = activations[-1] - y
+        if self.n_outputs == 1:
+            output_error = activations[-1] - y * self.sigmoid_prime(activations[-1])
+            print(f' δL {output_error.shape} =  dL/dA3 {(activations[-1] - y).shape} * dA3/dZ3 {self.sigmoid_prime(activations[-1]).shape}')
+        else:
+            output_error = activations[-1] - y
+            print(f' δL{output_error.shape} =  dL/dA3 {(activations[-1] - y).shape} * dA3/dZ3 {self.softmax(activations[-1]).shape}')
 
-        #Backward pass 
-        for l in range(1, len(self.weights) + 1):
-            # index from the end of the list
-            i = -l
+        # traverse backwards but skip the input layer thus 0 index
+        for layer in range(len(self.weights) - 1, 0, -1):
+            pass
 
-            # calculate gradients
-            if i == -1:
-                # check if case is binary or multi-class classification
-                if self.n_outputs == 1:
-                    error = output_error * self.sigmoid_prime(activations[i])
-                else:
-                    error = output_error * self.softmax(activations[i])
-            else:
-                error = np.dot(delta, self.weights[i+1].T) * self.relu_prime(activations[i])
+        print(np.dot(activations[-2].T, output_error).shape)
 
-            # calculate delta
-            delta = error * self.eta
+        # #Backward pass 
+        # for l in range(1, len(self.weights) + 1):
+        #     # index from the end of the list
+        #     i = -l
 
-            # calculate gradients
-            weight_gradients = np.dot(activations[i-1].T, delta)
-            bias_gradients = np.sum(delta, axis=0, keepdims=True)
+        #     # calculate gradients
+        #     if i == -1:
+        #         # check if case is binary or multi-class classification
+        #         if self.n_outputs == 1:
+        #             error = output_error * self.sigmoid_prime(activations[i])
+        #         else:
+        #             error = output_error * self.softmax(activations[i])
+        #     else:
+        #         error = np.dot(delta, self.weights[i+1].T) * self.relu_prime(activations[i])
 
-            # update weights and bias
-            self.weights[i] -= weight_gradients
-            self.bias[i] -= bias_gradients
+        #     # calculate delta
+        #     delta = error * self.eta
+
+        #     # calculate gradients
+        #     weight_gradients = np.dot(activations[i-1].T, delta)
+        #     bias_gradients = np.sum(delta, axis=0, keepdims=True)
+
+        #     # update weights and bias
+        #     self.weights[i] -= weight_gradients
+        #     self.bias[i] -= bias_gradients
 
     # training
     def train(self, X, y, X_val = None, y_val = None, batch_size = 32):
