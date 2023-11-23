@@ -100,47 +100,28 @@ class MultilayerPerceptron(object):
     # back propagation
     def back_propagation(self, X, y, activations):
         
-        # initial error 
-        if self.n_outputs == 1:
-            output_error = activations[-1] - y * self.sigmoid_prime(activations[-1])
-            print(f' δL {output_error.shape} =  dL/dA3 {(activations[-1] - y).shape} * dA3/dZ3 {self.sigmoid_prime(activations[-1]).shape}')
-        else:
-            output_error = activations[-1] - y
-            print(f' δL{output_error.shape} =  dL/dA3 {(activations[-1] - y).shape} * dA3/dZ3 {self.softmax(activations[-1]).shape}')
+        for layer in range (1, len(self.weights) + 1):
 
-        # traverse backwards but skip the input layer thus 0 index
-        for layer in range(len(self.weights) - 1, 0, -1):
-            pass
+            print(-layer)
+            if -layer == -1:
 
-        print(np.dot(activations[-2].T, output_error).shape)
+                if self.n_outputs == 1:
+                    error = activations[-1] - y * self.sigmoid_prime(activations[-1])
+                    print(f' δL {error.shape} =  dL/dA3 {(activations[-1] - y).shape} * dA3/dZ3 {self.sigmoid_prime(activations[-1]).shape}')
+                else:
+                    error = activations[-1] - y
+                    print(f' δl{error.shape} =  dL[3]/dA3 {(activations[-1] - y).shape} * dA3/dZ3 {self.softmax(activations[-1]).shape}')
+            else:
+                error = np.dot(error, self.weights[-layer+1].T) * self.relu_prime(activations[-layer])
+  
+            print(f'A{-layer-1} {activations[-layer-1].T.shape}.T * δl {error.shape}')
+            print(f'W[{-layer}] {self.weights[-layer].shape}')
 
-        # #Backward pass 
-        # for l in range(1, len(self.weights) + 1):
-        #     # index from the end of the list
-        #     i = -l
+            delta = error * self.eta
 
-        #     # calculate gradients
-        #     if i == -1:
-        #         # check if case is binary or multi-class classification
-        #         if self.n_outputs == 1:
-        #             error = output_error * self.sigmoid_prime(activations[i])
-        #         else:
-        #             error = output_error * self.softmax(activations[i])
-        #     else:
-        #         error = np.dot(delta, self.weights[i+1].T) * self.relu_prime(activations[i])
+            self.weights[-layer] -= np.dot(activations[-layer-1].T, delta)
+            self.bias[-layer] -= np.sum(delta, axis=0, keepdims=True)
 
-        #     # calculate delta
-        #     delta = error * self.eta
-
-        #     # calculate gradients
-        #     weight_gradients = np.dot(activations[i-1].T, delta)
-        #     bias_gradients = np.sum(delta, axis=0, keepdims=True)
-
-        #     # update weights and bias
-        #     self.weights[i] -= weight_gradients
-        #     self.bias[i] -= bias_gradients
-
-    # training
     def train(self, X, y, X_val = None, y_val = None, batch_size = 32):
         
         training_loss = []
