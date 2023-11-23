@@ -34,7 +34,9 @@ class MultilayerPerceptron(object):
                  n_iterations=50,
                  input_layer_size=784, 
                  hidden_layers_size=[128, 64],
-                 n_outputs= 10):
+                 n_outputs= 10,
+                 regularization='l2',
+                 lambda_reg=0.01):
         
         # alpha is the learning rate
         self.eta = alpha
@@ -104,8 +106,16 @@ class MultilayerPerceptron(object):
             else:
                 error = np.dot(error, self.weights[-layer+1].T) * self.relu_prime(activations[-layer])
 
+            if self.regularization == 'l2':
+                reg_penalty = self.lambda_reg * self.weights[-layer]
+            elif self.regularization == 'l1':
+                reg_penalty = self.lambda_reg * np.sign(self.weights[-layer])
+            else:
+                reg_penalty = 0
+
             delta = error * self.eta
-            self.weights[-layer] -= np.dot(activations[-layer-1].T, delta)
+            
+            self.weights[-layer] -=  (np.dot(activations[-layer-1].T, delta) + reg_penalty)
             self.bias[-layer] -= np.sum(delta, axis=0, keepdims=True)
 
     def train(self, X, y, X_val = None, y_val = None, batch_size = 32):
