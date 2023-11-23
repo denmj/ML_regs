@@ -70,21 +70,15 @@ class MultilayerPerceptron(object):
     # feed forward
     def forward_propagation(self, X):
         activations = [X]
-        print(f'A {0} : {activations[0].shape} ')
         # -1 because the last layer is the output layer
         for i in range(len(self.weights) - 1):
             linear_output = np.dot(activations[i], self.weights[i]) + self.bias[i]
             activation_output = self.relu(linear_output)
             # print activation[i].shape, weights[i].shape, linear_output.shape
-            print(f'W {i+1} : {self.weights[i].shape} ')
-            print(f'Z {i+1} - Linear output shape: {linear_output.shape}')
-            print(f'A {i+1} - Activation(relu) output shape: {activation_output.shape}')
+
             activations.append(activation_output)
         # output layer
         last_linear_output = np.dot(activations[-1], self.weights[-1]) + self.bias[-1]
-        print(f'Z {2} - Linear output shape: {activations[-1].shape} ')
-        print(f'W {2} - Weights shape: {self.weights[-1].shape} ')
-        print(f'Z {3} - Linear output shape: {last_linear_output.shape}')
 
         # check if case is binary or multi-class classification
         if self.n_outputs == 1:
@@ -92,7 +86,6 @@ class MultilayerPerceptron(object):
         else:
             last_activation_output = self.softmax(last_linear_output)
     
-        print(f'A {3} - Activation (softmax) output shape: {last_activation_output.shape}')
         activations.append(last_activation_output)
 
         return activations
@@ -102,23 +95,16 @@ class MultilayerPerceptron(object):
         
         for layer in range (1, len(self.weights) + 1):
 
-            print(-layer)
             if -layer == -1:
 
                 if self.n_outputs == 1:
                     error = activations[-1] - y * self.sigmoid_prime(activations[-1])
-                    print(f' δL {error.shape} =  dL/dA3 {(activations[-1] - y).shape} * dA3/dZ3 {self.sigmoid_prime(activations[-1]).shape}')
                 else:
                     error = activations[-1] - y
-                    print(f' δl{error.shape} =  dL[3]/dA3 {(activations[-1] - y).shape} * dA3/dZ3 {self.softmax(activations[-1]).shape}')
             else:
                 error = np.dot(error, self.weights[-layer+1].T) * self.relu_prime(activations[-layer])
-  
-            print(f'A{-layer-1} {activations[-layer-1].T.shape}.T * δl {error.shape}')
-            print(f'W[{-layer}] {self.weights[-layer].shape}')
 
             delta = error * self.eta
-
             self.weights[-layer] -= np.dot(activations[-layer-1].T, delta)
             self.bias[-layer] -= np.sum(delta, axis=0, keepdims=True)
 
@@ -140,7 +126,6 @@ class MultilayerPerceptron(object):
                 y_batch = y_shuffled[j:j+batch_size]
 
                 activations = self.forward_propagation(X_batch)
-                print(X_batch.shape, y_batch.shape)
                 self.back_propagation(X_batch, y_batch, activations)
 
             # calculate the loss
