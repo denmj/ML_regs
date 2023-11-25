@@ -28,6 +28,38 @@ class DecisionTree(object):
         entropy = -probs.dot(np.log2(probs))
 
         return entropy
+
+    def information_gain(self, y, y_left, y_right):
+        """
+        Calculate the information gain.
+
+        Parameters
+        ----------
+        y : array-like, shape = [n_samples]
+            The target values.
+        y_left : array-like, shape = [n_samples]
+            The target values of the left child node.
+        y_right : array-like, shape = [n_samples]
+            The target values of the right child node.
+
+        Returns
+        -------
+        info_gain : float
+            Information gain.
+        """
+
+        # calculate the parent entropy
+        parent_entropy = self.entropy(y)
+
+        # calculate the child entropy
+        child_entropy = 0
+        for child in [y_left, y_right]:
+            child_entropy += self.entropy(child) * len(child) / len(y)
+
+        # calculate the information gain
+        info_gain = parent_entropy - child_entropy
+
+        return info_gain
     
     def best_split(self, X, y):
         """
@@ -55,7 +87,22 @@ class DecisionTree(object):
         n_features = X.shape[1]
 
         for feature in range(n_features):
-            pass
+                
+                # get all the unique values of the feature
+                unique_values = np.unique(X[:, feature])
+    
+                # calculate the information gain
+                new_entropy = 0
+                for value in unique_values:
+                    y_left = y[X[:, feature] == value]
+                    y_right = y[X[:, feature] != value]
+                    info_gain = self.information_gain(y, y_left, y_right)
+                    new_entropy += info_gain
+    
+                # update the information gain
+                if new_entropy > best_info_gain:
+                    best_info_gain = new_entropy
+                    best_feature = feature
 
 
         return best_feature, best_info_gain
