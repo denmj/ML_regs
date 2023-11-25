@@ -114,7 +114,7 @@ class MultilayerPerceptron(object):
                 reg_penalty = 0
 
             delta = error * self.eta
-            
+
             self.weights[-layer] -=  (np.dot(activations[-layer-1].T, delta) + reg_penalty)
             self.bias[-layer] -= np.sum(delta, axis=0, keepdims=True)
 
@@ -187,8 +187,30 @@ class MultilayerPerceptron(object):
     def softmax(self, z):
         return np.exp(z) / np.sum(np.exp(z), axis=1, keepdims=True)
     
+    # save model weights
+    def save_weights(self, filename):
+        np.savez(filename, *self.weights)
 
+    # load model weights
+    def load_weights(self, filename):
+        weights = np.load(filename)
+        for i in range(len(self.weights)):
+            self.weights[i] = weights['arr_%d' % i]
 
+    # Accuracy calculation
+    def accuracy(self, y_true, y_pred):
+        return np.sum(y_true == y_pred, axis=0) / len(y_true)
+
+    def recall(self, y_true, y_pred):
+        return np.sum(y_true * y_pred) / np.sum(y_true)
+
+    def precision(self, y_true, y_pred):
+        return np.sum(y_true * y_pred) / np.sum(y_pred)
+    
+    def f1_score(self, y_true, y_pred):
+        p = self.precision(y_true, y_pred)
+        r = self.recall(y_true, y_pred)
+        return 2 * p * r / (p + r)
     
 
 
