@@ -8,3 +8,8 @@ scikit-learn
 
 # Notebook
 ipykernel
+
+# NN Libraries
+torch
+torchvision
+torchaudio
