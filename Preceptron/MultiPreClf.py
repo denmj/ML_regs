@@ -41,6 +41,12 @@ class MultilayerPerceptron(object):
         # alpha is the learning rate
         self.eta = alpha
 
+        # regularization is the type of regularization
+        self.regularization = regularization
+
+        # lambda_reg is the regularization parameter
+        self.lambda_reg = lambda_reg
+
         # n_iterations is the number of training iterations
         self.n_iterations = n_iterations
 
@@ -65,9 +71,6 @@ class MultilayerPerceptron(object):
 
             self.weights.append(np.random.randn(self.layer_sizes[i], self.layer_sizes[i+1]) * he_std_dev)
             self.bias.append(np.zeros((1, self.layer_sizes[i+1])))
-        # print shape of weights
-        for i in range(len(self.weights)):
-            print(f'Weights shape: {self.weights[i].shape}')
     
     # feed forward
     def forward_propagation(self, X):
@@ -141,13 +144,13 @@ class MultilayerPerceptron(object):
             # calculate the loss
             loss = self.cross_entropy_loss(y, self.forward_propagation(X)[-1])
 
-            print(f'Epoch: {i}, Loss: {loss}')
+            print(f'Epoch: {i}, Training loss : {loss}')
             training_loss.append(loss)
 
             if X_val is not None and y_val is not None:
       
                 val_loss = self.cross_entropy_loss(y_val, self.forward_propagation(X_val)[-1])
-                print(f'Epoch: {i}, Loss: {val_loss}')
+                print(f'Epoch: {i}, valid loss: {val_loss}')
                 validation_loss.append(val_loss)
         
         return training_loss, validation_loss
@@ -211,6 +214,9 @@ class MultilayerPerceptron(object):
         p = self.precision(y_true, y_pred)
         r = self.recall(y_true, y_pred)
         return 2 * p * r / (p + r)
+    
+    def predict(self, X):
+        return self.forward_propagation(X)[-1]
     
 
 
