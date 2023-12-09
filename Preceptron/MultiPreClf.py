@@ -38,6 +38,8 @@ class MultilayerPerceptron(object):
                  regularization='l2',
                  lambda_reg=0.01):
         
+        np.random.seed(42)
+        
         # alpha is the learning rate
         self.eta = alpha
 
@@ -103,7 +105,7 @@ class MultilayerPerceptron(object):
             if -layer == -1:
 
                 if self.n_outputs == 1:
-                    error = activations[-1] - y * self.sigmoid_prime(activations[-1])
+                    error = activations[-1] - y
                 else:
                     error = activations[-1] - y
             else:
@@ -121,7 +123,7 @@ class MultilayerPerceptron(object):
             self.weights[-layer] -=  (np.dot(activations[-layer-1].T, delta) + reg_penalty)
             self.bias[-layer] -= np.sum(delta, axis=0, keepdims=True)
 
-    def train(self, X, y, X_val = None, y_val = None, batch_size = 32):
+    def train(self, X, y, X_val = None, y_val = None, batch_size = 20):
         
         training_loss = []
         validation_loss = []
@@ -216,7 +218,8 @@ class MultilayerPerceptron(object):
         return 2 * p * r / (p + r)
     
     def predict(self, X):
-        return self.forward_propagation(X)[-1]
+        predictions =  self.forward_propagation(X)[-1]
+        return np.argmax(predictions, axis=1) if self.n_outputs > 1 else (predictions > 0.5).astype(int)
     
 
 
