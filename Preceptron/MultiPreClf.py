@@ -304,19 +304,43 @@ class MLP(object):
         activations.append(last_activation_output)
         return activations
 
+    def backpropagation(self, X, y, activations):
+
+        n_samples = X.shape[0]
+
+        w_grads = [np.zeros_like(w) for w in self.weights]
+        b_grads = [np.zeros_like(b) for b in self.bias]
+
+        if self.n_outputs == 1:
+            error = activations[-1] - y  
+        else:
+            error = (activations[-1] - y) / activations[-1] * (1 - activations[-1])
+        
+        for layer in reversed(range(len(self.weights))):
+            w_grads[layer] = np.dot(activations[layer].T, error) / n_samples
+            b_grads[layer] = np.sum(error, axis=0, keepdims=True) / n_samples
+            if layer > 0:
+                error = np.dot(error, self.weights[layer].T) * self.relu_prime(activations[layer])
+
+        if self.regularization == 'l2':
+            w_grads[layer] += (self.lambda_reg / n_samples) * self.weights[layer]
+        elif self.regularization == 'l1':
+            w_grads[layer] += (self.lambda_reg / n_samples) * np.sign(self.weights[layer])
+        
+        # Update weights and biases
+        for layer in range(len(self.weights)):
+            self.weights[layer] -= self.eta * w_grads[layer]
+            self.bias[layer] -= self.eta * b_grads[layer]
+
+
     def back_propagation(self, X, y, activations):
 
         error = None
         for layer in range(1, len(self.weights) + 1):
-            print(layer)
             if layer == len(self.weights):
                 error = activations[-1] - y
-                print(layer)
-                print(error)
             else:
                 if error is not None:
-                    print(layer)
-                    print(error)
                     error = np.dot(error, self.weights[-layer + 1].T) * self.relu_prime(activations[-layer])
                 else:
                     # Handle case where error is not yet defined
