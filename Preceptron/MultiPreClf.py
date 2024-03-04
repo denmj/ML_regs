@@ -24,18 +24,18 @@ class MLP(object):
         for i in range(len(self.layer_sizes) - 1):
             if he:
                 he_std_dev = np.sqrt(2 / self.layer_sizes[i])
-                self.weights.append(np.random.randn(self.layer_sizes[i + 1], self.layer_sizes[i]) * he_std_dev)
+                self.weights.append(np.random.randn(self.layer_sizes[i], self.layer_sizes[i+1]) * he_std_dev)
             else:
-                self.weights.append(np.random.randn(self.layer_sizes[i + 1], self.layer_sizes[i]) - 0.5)
-                self.bias.append(np.random.rand(self.layer_sizes[i + 1], 1) - 0.5)
+                self.weights.append(np.random.randn(self.layer_sizes[i], self.layer_sizes[i+1]) - 0.5)
+            self.bias.append(np.random.rand(1, self.layer_sizes[i + 1]) - 0.5)
 
     def forward_propagation(self, X):
         activations = [X]
         for i in range(len(self.weights) - 1):
-            linear_output = self.weights[i].dot(activations[i]) + self.bias[i]
+            linear_output = np.dot(activations[i], self.weights[i]) + self.bias[i]
             activation_output = self.relu(linear_output)
             activations.append(activation_output)
-        last_linear_output = self.weights[-1].dot(activations[-1]) + self.bias[-1]
+        last_linear_output = np.dot(activations[-1], self.weights[-1]) + self.bias[-1]
         if self.n_outputs == 1:
             last_activation_output = self.sigmoid(last_linear_output)
         else:
@@ -50,10 +50,7 @@ class MLP(object):
         w_grads = [np.zeros_like(w) for w in self.weights]
         b_grads = [np.zeros_like(b) for b in self.bias]
 
-        if self.n_outputs == 1:
-            error = activations[-1] - y  
-        else:
-            error = (activations[-1] - y) / activations[-1] * (1 - activations[-1])
+        error = activations[-1] - y
         
         for layer in reversed(range(len(self.weights))):
             w_grads[layer] = np.dot(activations[layer].T, error) / n_samples
@@ -61,72 +58,64 @@ class MLP(object):
             if layer > 0:
                 error = np.dot(error, self.weights[layer].T) * self.relu_prime(activations[layer])
 
-        if self.regularization == 'l2':
-            w_grads[layer] += (self.lambda_reg / n_samples) * self.weights[layer]
-        elif self.regularization == 'l1':
-            w_grads[layer] += (self.lambda_reg / n_samples) * np.sign(self.weights[layer])
+        # if self.regularization == 'l2':
+        #     w_grads[layer] += (self.lambda_reg / n_samples) * self.weights[layer]
+        # elif self.regularization == 'l1':
+        #     w_grads[layer] += (self.lambda_reg / n_samples) * np.sign(self.weights[layer])
         
         # Update weights and biases
         for layer in range(len(self.weights)):
             self.weights[layer] -= self.eta * w_grads[layer]
             self.bias[layer] -= self.eta * b_grads[layer]
 
-        return error
 
-    def back_propagation(self, X, y, activations):
-
-        error = None
-        for layer in range(1, len(self.weights) + 1):
-            if layer == len(self.weights):
-                error = activations[-1] - y
-            else:
-                if error is not None:
-                    error = np.dot(error, self.weights[-layer + 1].T) * self.relu_prime(activations[-layer])
-                else:
-                    # Handle case where error is not yet defined
-                    error = np.zeros_like(activations[-layer])
-
-            if self.regularization == 'l2':
-                reg_penalty = self.lambda_reg * self.weights[-layer]
-            elif self.regularization == 'l1':
-                reg_penalty = self.lambda_reg * np.sign(self.weights[-layer])
-            else:
-                reg_penalty = 0
-            delta = error * self.eta
-            self.weights[-layer] -= (np.dot(activations[-layer - 1].T, delta) + reg_penalty)
-            self.bias[-layer] -= np.sum(delta, axis=0, keepdims=True)
-
-    def train(self, X, y, X_val=None, y_val=None, batch_size=20, verbose=True):
+    def train(self, X, y, X_val=None, y_val=None, batch_size=100, verbose=True):
         
         self.init_weights()
+        n_samples = X.shape[0]
 
         training_loss = []
         validation_loss = []
+        acc = []
+
+        if batch_size is None or batch_size > n_samples:
+            batch_size = n_samples
+
         for i in range(self.n_iterations):
-            permutation = np.random.permutation(X.shape[0])
-            X_shuffled = X[permutation]
-            y_shuffled = y[permutation]
+            
+            indices = np.arange(n_samples)
+            np.random.shuffle(indices)
+
+            X_train = X[indices]
+            y_train = y[indices]
             batch_losses = []
 
-            for j in range(0, X.shape[0], batch_size):
+            for j in range(0, n_samples, batch_size):
+                
+                end_idx = min(j + batch_size, n_samples)
+                X_batch = X_train[j:end_idx]
+                y_batch = y_train[j:end_idx]
 
-                X_batch = X_shuffled[j:j + batch_size]
-                y_batch = y_shuffled[j:j + batch_size]
-
+                # Forward propagation
                 activations = self.forward_propagation(X_batch)
-                batch_loss = self.cross_entropy_loss(y_batch, activations[-1])
-                batch_losses.append(batch_loss)
 
+                batch_losses = self.cross_entropy_loss(y_batch, activations[-1])
+                accuracy = self.accuracy(np.argmax(y_batch, axis=1), np.argmax(activations[-1], axis=1))
+
+                acc.append(accuracy)
+                training_loss.append(batch_losses)
+            
+                # Backpropagation
                 self.backpropagation(X_batch, y_batch, activations)
 
-            epoch_loss = np.mean(batch_losses)
-            pred = self.predict(X)
-            acc = self.accuracy(np.argmax(y, axis=1), pred)
             if verbose: 
-                print(f'Epoch: {i}, Training loss : {epoch_loss}')
-                print(f'Epoch: {i}, Training accuracy : {acc}')
+                if i % 10 or i == self.n_iterations - 1:
+                    loss =  np.mean(batch_losses)
+                    acc_ = np.mean(accuracy)
+                    print(f'Epoch: {i}, Training loss: {loss}')
+                    print(f'Epoch: {i}, Training accuracy: {acc_}')
 
-            training_loss.append(epoch_loss)
+
 
             if X_val is not None and y_val is not None:
                 val_activations = self.forward_propagation(X_val)
