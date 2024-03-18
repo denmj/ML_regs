@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 class AlexNet(nn.Module):
     def __init__(self, num_classes=1000):
         super(AlexNet, self).__init__()
@@ -37,7 +38,3 @@ class AlexNet(nn.Module):
         x = torch.flatten(x, 1)
         x = self.classifier(x)
         return x
-
-# Example of creating an AlexNet instance
-alexnet = AlexNet(num_classes=1000)
-print(alexnet)  # This will print the structure of the AlexNet network.
