@@ -5,7 +5,7 @@ import numpy as np
 from matplotlib import pyplot
 # Open the image form working directory
 
-image = Image.open('C:/Users/denis/Desktop/ML/ML_regs/CNN/five_.jpg')
+image = Image.open('/CNN/five_.jpg')
 image = image.resize((64, 64))
 
 image = np.asarray(image)
@@ -14,7 +14,7 @@ image = image.reshape(1, image.shape[0],
                       image.shape[2])
 print(image.shape)
 
-checkpoint_path = 'C:/Users/denis/Desktop/ML/ML_regs/CNN/cp.ckpt'
+checkpoint_path = '/CNN/cp.ckpt'
 cnn_model = create_model()
 
 cnn_model.load_weights(checkpoint_path)
