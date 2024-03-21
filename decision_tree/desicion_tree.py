@@ -136,7 +136,7 @@ class DecisionTree(object):
 
         return tree
 
-        def calculate_leaf_value(self, y):
+    def calculate_leaf_value(self, y):
         """
         Calculates the most occurring value in the given list of y values.
 
