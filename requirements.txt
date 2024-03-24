@@ -16,3 +16,4 @@ torchaudio
 torchmetrics
 torchinfo
 tensorboard
+torchsummary
