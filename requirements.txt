@@ -17,3 +17,6 @@ torchmetrics
 torchinfo
 tensorboard
 torchsummary
+
+keras
+tensorflow
