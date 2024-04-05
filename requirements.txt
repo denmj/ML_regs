@@ -20,3 +20,6 @@ torchsummary
 
 keras
 tensorflow
+
+# OpenCV
+opencv-contrib-python
