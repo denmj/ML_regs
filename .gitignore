@@ -8,3 +8,6 @@ pytorch_/data/
 
 # ignore model files
 *.pth
+
+# any data folders
+data/
