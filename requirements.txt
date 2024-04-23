@@ -4,7 +4,10 @@ seaborn
 matplotlib
 scipy
 Pillow
+
+# ML
 scikit-learn
+imbalanced-learn
 
 # Notebook
 ipykernel
