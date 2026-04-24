@@ -1,13 +1,9 @@
-print(df.groupby(["SUB_VENDOR", "predicted_defects"]).agg(
-    mean_coverage  = ("total_coverage_excl_last", "mean"),
-    median_coverage= ("total_coverage_excl_last", "median"),
-    mean_count     = ("defect_count_excl_last",   "mean"),
-    median_count   = ("defect_count_excl_last",   "median"),
-    pct_clean      = ("total_coverage_excl_last",
-                      lambda x: (x < 0.05).mean() * 100),
-    n              = ("total_coverage_excl_last",  "count")
-).round(3))
-
-# 5E
-print(df.groupby(["SUB_VENDOR", "predicted_defects"])
-      ["worst_ring"].median().round(2).unstack())
+# Check coverage distribution thresholds
+for thresh in [0.05, 0.1, 0.2, 0.5, 1.0]:
+    pct_below = (df["total_coverage_excl_last"] <= thresh).mean() * 100
+    pct_above = 100 - pct_below
+    n_above   = (df["total_coverage_excl_last"] > thresh).sum()
+    print(f"threshold {thresh}%:  "
+          f"{pct_below:.1f}% below  |  "
+          f"{pct_above:.1f}% above  |  "
+          f"n above = {n_above:,}")
