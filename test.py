@@ -1,23 +1,21 @@
-# Logistic regression or simple correlation
-# which size category best predicts contamination?
-df["contaminated"] = (df["total_coverage_excl_last"] > 0.05).astype(int)
+# Check multi-size correlation for REO
+# Does having defects of ALL sizes simultaneously predict contamination?
+reo = df[df.SUB_VENDOR == "REO"].copy()
+reo["has_small"]   = (reo.count_small_excl_last   > 0).astype(int)
+reo["has_xlarge"]  = (reo.count_xlarge_excl_last  > 0).astype(int)
+reo["has_medium"]  = (reo.count_medium_excl_last  > 0).astype(int)
+reo["multi_size"]  = (reo.has_small + reo.has_xlarge + reo.has_medium)
 
-for sz in ["small","medium","large","xlarge","xxlarge"]:
-    col  = f"count_{sz}_excl_last"
-    corr = df[df.SUB_VENDOR=="REO"][col].corr(
-           df[df.SUB_VENDOR=="REO"]["contaminated"])
-    print(f"REO  {sz:8s} → contamination corr: {corr:.3f}")
-
-
-df["week"] = pd.to_datetime(df["serial_dt"]).dt.to_period("W").dt.start_time
-
-print(df.groupby(["week","SUB_VENDOR"])[[
-    "count_small_excl_last",
-    "count_xlarge_excl_last",
-    "count_xxlarge_excl_last",
-    "total_coverage_excl_last"
-]].mean().round(2))
+print(reo["multi_size"].corr(reo["contaminated"]))
 
 
-print(df.groupby(["SUB_VENDOR","predicted_defects"])
-      ["count_small_excl_last"].mean().round(1).unstack())
+
+print(df.groupby("SUB_VENDOR").apply(
+    lambda x: x["defect_count_excl_last"].corr(x["contaminated"])
+).round(3))
+
+
+reo = df[df.SUB_VENDOR == "REO"].copy()
+print(pd.crosstab(reo.predicted_defects,
+                  reo.contaminated,
+                  normalize="index").round(3) * 100)
